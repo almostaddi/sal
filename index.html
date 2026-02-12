@@ -7,39 +7,19 @@
     
     <!-- CSS Modules -->
     <link rel="stylesheet" href="css/core.css">
-    <link rel="stylesheet" href="css/welcome.css">
-    <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/board.css">
+    <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/controls.css">
     <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
     <h1>🎲 Snakes and Ladders 🎲</h1>
     
-    <!-- WELCOME PAGE -->
-    <div id="welcomePage" class="page active">
-        <div class="welcome-container">
-            <div class="welcome-content">
-                <p class="tagline">A Customizable Adult Game Experience</p>
-                
-                <div class="welcome-buttons">
-                    <button id="newGameBtn" class="primary-btn">🎮 New Game</button>
-                    <button id="continueGameBtn" class="secondary-btn">▶️ Continue Game</button>
-                    <button id="howToPlayBtn" class="secondary-btn">❓ How to Play</button>
-                </div>
-                
-                <div class="welcome-stats" id="welcomeStats">
-                    <p>Last played: <span id="lastPlayed"></span></p>
-                    <p>Turn: <span id="savedTurn"></span> • Square: <span id="savedSquare"></span></p>
-                </div>
-            </div>
+    <!-- HOME PAGE - Settings and Start Game -->
+    <div id="homePage">
+        <div>
+            <button id="startButton">🎮 Start Game</button>
         </div>
-    </div>
-    
-    <!-- MENU/SETTINGS PAGE -->
-    <div id="menuPage" class="page">
-        <button id="backToWelcomeBtn" class="back-btn">← Back</button>
-        
         <div id="buttoncontainer">
             <div class="settings-column-left">
                 <label>👤 Player Name:</label>
@@ -238,12 +218,10 @@
                 </div>
             </div>
         </div>
-        
-        <button id="startGameBtn" class="start-btn">🎮 Start Game</button>
     </div>
     
-    <!-- BOARD PAGE -->
-    <div id="boardPage" class="page">
+    <!-- BOARD PAGE - Game Board and Controls -->
+    <div id="boardPage">
         <div id="gameContainer">
             <div id="board"></div>
             <div id="controls">
@@ -259,12 +237,14 @@
         </div>
     </div>
     
-    <!-- TASK PAGE -->
-    <div id="taskPage" class="page">
+    <!-- TASK PAGE - Task Display -->
+    <div id="taskPage">
         <div id="instructions"></div>
     </div>
     
-    <!-- MODALS -->
+    <button id="resetBtn">🔄 Reset</button>
+    <button id="patchNotesBtn">📋 Notes</button>
+    
     <div id="patchNotesModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -283,19 +263,6 @@
             </div>
         </div>
     </div>
-    
-    <div id="howToPlayModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>❓ How to Play</h2>
-            <p>Roll the dice to move around the board. Land on different squares to receive tasks based on your selected instruction sets and toys.</p>
-            <p>Snakes send you down, ladders send you up. Reach the final square to complete the game and receive your prize!</p>
-        </div>
-    </div>
-    
-    <!-- Fixed Buttons -->
-    <button id="resetBtn">🔄 Reset</button>
-    <button id="patchNotesBtn">📋 Notes</button>
     
     <!-- JavaScript Modules -->
     <script type="module" src="js/main.js"></script>
