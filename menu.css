@@ -1,0 +1,606 @@
+/* Page visibility system */
+#homePage {
+    display: block;
+}
+
+#boardPage,
+#taskPage {
+    display: none;
+}
+
+#homePage.hidden {
+    display: none;
+}
+
+#boardPage.active,
+#taskPage.active {
+    display: block;
+}
+
+/* Settings page layout */
+h1 {
+    font-size: 3em;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+#homePage {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+#homePage > div:first-child {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#startButton {
+    padding: 20px 50px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Button container - two column layout */
+#buttoncontainer {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.settings-column-left,
+.settings-column-right {
+    flex: 1;
+    min-width: 300px;
+}
+
+.settings-column-left {
+    margin-bottom: 20px;
+}
+
+@media (min-width: 900px) {
+    #buttoncontainer {
+        flex-wrap: nowrap;
+    }
+    
+    .settings-column-left,
+    .settings-column-right {
+        width: 50%;
+    }
+}
+
+/* Labels and inputs */
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    margin-top: 15px;
+    padding: 10px;
+    background: white;
+    border-radius: 8px;
+}
+
+input[type="text"],
+select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+select {
+    cursor: pointer;
+}
+
+/* Instruction set checkboxes */
+.instruction-set-selector {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    border: 2px solid #667eea;
+    margin-bottom: 15px;
+}
+
+.instruction-set-selector label {
+    display: block;
+    padding: 8px;
+    cursor: pointer;
+    margin: 0;
+    background: transparent;
+}
+
+.instruction-set-selector input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+    cursor: pointer;
+}
+
+/* Toy library container */
+#toyLibraryContainer {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+/* Continuous task probability display */
+#toyLibraryContainer > div:first-child {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #dee2e6;
+}
+
+#toyLibraryContainer > div:first-child > div:first-child {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+#toyLibraryContainer > div:first-child > div:last-child {
+    display: flex;
+    gap: 15px;
+    font-size: 14px;
+}
+
+#toyLibraryContainer span {
+    font-weight: 500;
+}
+
+#totalAddProbability,
+#totalRemoveProbability {
+    font-weight: 700;
+}
+
+/* Toy library items */
+.toy-library-item {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.toy-library-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.toy-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.toy-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.toy-checkbox-wrapper input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #51cf66;
+}
+
+.toy-name {
+    flex: 1;
+}
+
+.toy-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-left: 28px;
+    margin-bottom: 6px;
+}
+
+.toy-controls label {
+    font-size: 0.85em;
+    color: #333;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.toy-controls input[type="number"] {
+    width: 55px;
+    padding: 4px;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    text-align: center;
+    margin: 0;
+}
+
+.toy-controls input[type="number"]:disabled {
+    opacity: 0.5;
+    cursor: default;
+    background: #f8f9fa;
+}
+
+/* Set difficulty section */
+.set-difficulty {
+    margin-left: 28px;
+    padding: 6px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-top: 6px;
+}
+
+.set-difficulty-item {
+    padding: 4px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.set-difficulty-item:last-child {
+    border-bottom: none;
+}
+
+.difficulty-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.difficulty-row > span {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9em;
+}
+
+.difficulty-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.difficulty-row select {
+    padding: 3px 6px;
+    border: 2px solid #667eea;
+    border-radius: 4px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin: 0;
+    width: auto;
+}
+
+.difficulty-row select:disabled {
+    opacity: 0.5;
+    cursor: default;
+    background: #f8f9fa;
+}
+
+/* Gear button for advanced settings */
+.gear-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.gear-btn:hover {
+    background: #5568d3;
+}
+
+.gear-btn.active {
+    background: #51cf66;
+}
+
+.gear-btn:disabled {
+    background: #adb5bd;
+    cursor: default;
+    opacity: 0.5;
+}
+
+.gear-btn:disabled:hover {
+    background: #adb5bd;
+}
+
+/* Advanced settings */
+.advanced-settings {
+    margin-left: 20px;
+    padding: 6px 10px;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid #667eea;
+    font-size: 0.8em;
+    color: #666;
+    display: none;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.advanced-settings.visible {
+    display: flex;
+}
+
+.advanced-settings label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    font-weight: normal;
+}
+
+.advanced-settings input {
+    width: 50px;
+    padding: 2px 4px;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    text-align: center;
+    margin: 0;
+}
+
+.advanced-settings input:disabled {
+    opacity: 0.5;
+    cursor: default;
+    background: #f8f9fa;
+}
+
+/* Prize settings sections */
+.prize-settings {
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    border: 2px solid #667eea;
+    margin-bottom: 20px;
+}
+
+.prize-settings h3 {
+    color: #667eea;
+    margin-bottom: 15px;
+    text-align: center;
+    display: none;
+}
+
+.prize-settings h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.prize-settings p {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+/* Sliders */
+.slider-container {
+    margin: 15px 0;
+}
+
+.slider-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: bold;
+}
+
+.slider-label .percentage {
+    color: #667eea;
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+    border: none;
+}
+
+#ruinSlider {
+    background: linear-gradient(to right, #ffd93d, #ffbc00);
+}
+
+#fullSlider {
+    background: linear-gradient(to right, #51cf66, #37b24d);
+}
+
+#deniedSlider {
+    background: linear-gradient(to right, #adb5bd, #868e96);
+}
+
+#strokingSlider {
+    background: linear-gradient(to right, #748ffc, #5c7cfa);
+}
+
+#vibeSlider {
+    background: linear-gradient(to right, #a78bfa, #8b5cf6);
+}
+
+#analSlider {
+    background: linear-gradient(to right, #f59f0b, #d97706);
+}
+
+/* Final challenge types section */
+.prize-settings > div {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px solid #e9ecef;
+}
+
+.prize-settings > div > div {
+    margin-bottom: 20px;
+}
+
+.prize-settings > div > div > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.prize-settings > div > div > div:first-child > div:first-child {
+    font-weight: 600;
+}
+
+.prize-settings > div > div > div:first-child > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prize-settings > div > div > div:first-child span {
+    font-size: 12px;
+    color: #666;
+}
+
+.prize-settings > div > div > div:first-child select {
+    padding: 4px 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    background: white;
+    width: auto;
+    margin: 0;
+}
+
+/* Challenge type checkboxes */
+.prize-settings > div > div > div:last-child {
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.prize-settings > div > div > div:last-child label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.prize-settings > div > div > div:last-child input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    margin: 0;
+}
+
+.prize-settings > div > div > div:last-child span {
+    color: #495057;
+    font-size: 14px;
+}
+
+.prize-settings > div > div > div:last-child input[type="number"] {
+    width: 50px;
+    padding: 2px 4px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Modifiers section */
+.prize-settings > div > div:last-child {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.prize-settings > div > div:last-child > div:first-child {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.prize-settings > div > div:last-child > div:last-child {
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.prize-settings > div > div:last-child label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.prize-settings > div > div:last-child input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #667eea;
+    margin: 0;
+}
+
+.prize-settings > div > div:last-child span {
+    color: #495057;
+    font-size: 14px;
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2em;
+    }
+    
+    #startButton {
+        padding: 15px 30px;
+        font-size: 18px;
+    }
+    
+    .settings-column-left,
+    .settings-column-right {
+        min-width: 100%;
+    }
+}
