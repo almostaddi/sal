@@ -39,20 +39,14 @@ let taskRegistryLoaded = false;
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎲 Snakes and Ladders - Initializing...');
+    console.log('📄 Preloaded page:', window.__INITIAL_PAGE__);
     
     // Initialize state FIRST (before loading saved game)
     initializeState();
     initializeGameFunctions(onTaskComplete);
     
-    // Try to load saved game state IMMEDIATELY
+    // Load saved game state
     const savedState = loadGameState();
-    
-    // Determine which page to show BEFORE any rendering
-    const targetPage = determineInitialPage(savedState);
-    console.log('📄 Initial page:', targetPage);
-    
-    // Show the correct page immediately
-    showPage(targetPage);
     
     // Initialize board
     const initialBoardSize = savedState?.totalSquares || 100;
@@ -82,21 +76,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     console.log('✅ Game Initialized');
 });
-
-// Determine which page to show on load
-function determineInitialPage(savedState) {
-    if (!savedState || !savedState.gameStarted) {
-        return 'home';
-    }
-    
-    // If there's a current instruction, show task page
-    if (savedState.currentInstruction && savedState.currentInstruction.trim() !== '') {
-        return 'task';
-    }
-    
-    // Otherwise show board
-    return 'board';
-}
 
 // Set up event listeners
 function setupEventListeners() {
