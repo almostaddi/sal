@@ -7,7 +7,7 @@ let taskRegistry = null;
 // Load task registry from manifest
 export async function loadTaskRegistry() {
     try {
-        const manifest = await fetch('tasks/manifest.json').then(r => r.json());
+        const manifest = await fetch('js/tasks/manifest.json').then(r => r.json());
         
         taskRegistry = {
             sets: {
