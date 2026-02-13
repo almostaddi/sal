@@ -27,6 +27,8 @@ export async function loadTaskRegistry() {
             for (const filePath of taskFiles) {
                 const taskDef = await loadTaskDefinition(filePath);
                 
+                if (!taskDef) continue;
+                
                 // Categorize by type
                 if (taskDef.type === 'snake') {
                     taskRegistry.snakes.push({ ...taskDef, filePath });
@@ -55,29 +57,12 @@ export async function loadTaskRegistry() {
     }
 }
 
-// Load task definition from HTML file
+// Load task definition from JS module file
 async function loadTaskDefinition(filePath) {
     try {
-        const response = await fetch(filePath);
-        const html = await response.text();
-        
-        // Parse HTML to extract task definition
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const scriptTag = doc.querySelector('script#task-definition');
-        
-        if (!scriptTag) {
-            console.warn(`No task definition found in ${filePath}`);
-            return null;
-        }
-        
-        // Extract the export default object
-        const scriptContent = scriptTag.textContent;
-        const module = { exports: {} };
-        const func = new Function('module', 'exports', scriptContent + '; return module.exports.default || exports.default;');
-        const taskDef = func(module, module.exports);
-        
-        return taskDef;
+        // Import the module directly
+        const module = await import(`../../${filePath}`);
+        return module.default;
     } catch (error) {
         console.error(`Failed to load task from ${filePath}:`, error);
         return null;
