@@ -196,9 +196,9 @@ a:hover {
     margin-top: 30px;
 }
 
-/* Fixed position buttons (Reset, Patch Notes) */
-#resetBtn,
-#patchNotesBtn {
+/* Fixed position buttons (Reset, Patch Notes) - only when NOT on home page */
+body:not(.on-home-page) #resetBtn,
+body:not(.on-home-page) #patchNotesBtn {
     position: fixed;
     top: 20px;
     padding: 10px 20px;
@@ -209,23 +209,23 @@ a:hover {
     letter-spacing: normal;
 }
 
-#patchNotesBtn {
+body:not(.on-home-page) #patchNotesBtn {
     right: 20px;
     background: var(--primary-gradient);
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-#patchNotesBtn:hover:not(:disabled) {
+body:not(.on-home-page) #patchNotesBtn:hover:not(:disabled) {
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
-#resetBtn {
+body:not(.on-home-page) #resetBtn {
     left: 20px;
     background: var(--danger-gradient);
     box-shadow: 0 4px 15px rgba(250, 82, 82, 0.4);
 }
 
-#resetBtn:hover:not(:disabled) {
+body:not(.on-home-page) #resetBtn:hover:not(:disabled) {
     box-shadow: 0 6px 20px rgba(250, 82, 82, 0.5);
 }
 
@@ -344,18 +344,18 @@ a:hover {
         font-size: 16px;
     }
     
-    #resetBtn,
-    #patchNotesBtn {
+    body:not(.on-home-page) #resetBtn,
+    body:not(.on-home-page) #patchNotesBtn {
         top: 10px;
         padding: 8px 16px;
         font-size: 12px;
     }
     
-    #patchNotesBtn {
+    body:not(.on-home-page) #patchNotesBtn {
         right: 10px;
     }
     
-    #resetBtn {
+    body:not(.on-home-page) #resetBtn {
         left: 10px;
     }
     
@@ -372,6 +372,4 @@ a:hover {
     #boardPage {
         padding-top: 60px;
     }
-}
-
 }
