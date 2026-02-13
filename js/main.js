@@ -130,6 +130,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Show the correct page immediately (after UI is pre-set)
     showPage(initialPage);
+
+    // Set initial body class for button positioning
+    if (initialPage === 'home') {
+        document.body.classList.add('on-home-page');
+    } else {
+        document.body.classList.remove('on-home-page');
+    }
     
     // Initialize UI
     initializeUI();
