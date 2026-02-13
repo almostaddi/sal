@@ -130,6 +130,7 @@ function setupEventListeners() {
 export function showPage(pageName) {
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
+        page.classList.add('hidden');
         page.style.display = 'none';
     });
     
@@ -137,6 +138,7 @@ export function showPage(pageName) {
     if (targetPage) {
         targetPage.style.display = 'block';
         targetPage.classList.add('active');
+        targetPage.classList.remove('hidden');
     }
 }
 
