@@ -54,6 +54,16 @@ function showPage(pageName) {
     } else {
         console.error('❌ Page not found:', pageName + 'Page');
     }
+    
+    // Update body class and button text based on page
+    const resetBtn = document.getElementById('resetBtn');
+    if (pageName === 'home') {
+        document.body.classList.add('on-home-page');
+        resetBtn.textContent = '🔄 Reset Settings';
+    } else {
+        document.body.classList.remove('on-home-page');
+        resetBtn.textContent = '🔄 Reset';
+    }
 }
 
 // Initialize app
