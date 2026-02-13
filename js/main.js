@@ -76,8 +76,8 @@ function setupEventListeners() {
     // Start game button
     document.getElementById('startButton').addEventListener('click', startGame);
     
-    // Roll dice button
-    document.getElementById('rollDice').addEventListener('click', rollDice);
+    // Roll dice button - DO NOT add event listener here
+    // The onclick handler is managed by playerMovement.js
     
     // Board size selector
     document.getElementById('boardSizeSelect').addEventListener('change', updateBoardSize);
