@@ -15,8 +15,7 @@ import {
     rollDice, 
     onTaskComplete, 
     setPlayerPosition,
-    resetPlayerState,
-    setPendingSnakeLadder
+    resetPlayerState
 } from './board/playerMovement.js';
 
 // Task system
@@ -41,12 +40,16 @@ let taskRegistryLoaded = false;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎲 Snakes and Ladders - Initializing...');
     
-    // Initialize state
+    // Initialize state FIRST (before loading saved game)
     initializeState();
     initializeGameFunctions(onTaskComplete);
     
+    // Try to load saved game state
+    const savedState = loadGameState();
+    
     // Initialize board
-    boardRenderer = new BoardRenderer(100);
+    const initialBoardSize = savedState?.totalSquares || 100;
+    boardRenderer = new BoardRenderer(initialBoardSize);
     boardRenderer.create();
     
     // Initialize UI
@@ -66,7 +69,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     
     // Restore saved game if exists
-    restoreSavedGame();
+    if (savedState) {
+        restoreSavedGame(savedState);
+    }
     
     console.log('✅ Game Initialized');
 });
@@ -196,6 +201,7 @@ function startGame() {
     window.GAME_STATE.turnCount = 0;
     document.getElementById('turnCounter').textContent = 'Turn: 0';
     document.getElementById('diceResult').textContent = 'Dice: -';
+    window.GAME_STATE.diceResultText = 'Dice: -';
     
     // Set up initial roll dice button handler
     const rollDiceButton = document.getElementById('rollDice');
@@ -217,17 +223,13 @@ function updateBoardSize() {
         boardRenderer.updateSize(newSize);
         boardRenderer.create();
     }
+    
+    saveGameState();
 }
 
 // Restore saved game
-function restoreSavedGame() {
-    const state = loadGameState();
-    if (!state) {
-        console.log('No saved game found');
-        return;
-    }
-    
-    console.log('💾 Restoring saved game...');
+function restoreSavedGame(state) {
+    console.log('💾 Restoring saved game...', state);
     
     // Restore UI state
     restoreUIState(state);
@@ -240,11 +242,6 @@ function restoreSavedGame() {
         // Restore player position
         setPlayerPosition(state.playerPosition);
         
-        // Restore pending snake/ladder
-        if (state.pendingSnakeLadder) {
-            setPendingSnakeLadder(state.pendingSnakeLadder);
-        }
-        
         // Update UI
         document.getElementById('turnCounter').textContent = `Turn: ${state.turnCount}`;
         document.getElementById('diceResult').textContent = state.diceResultText || 'Dice: -';
@@ -254,14 +251,43 @@ function restoreSavedGame() {
         rollDiceButton.onclick = rollDice;
         rollDiceButton.disabled = false;
         
-        // Show appropriate page
+        // Determine which page to show
         if (state.currentInstruction && state.currentInstruction.trim() !== '') {
+            // Was on task page
             showPage('task');
             const instructions = document.getElementById('instructions');
             instructions.innerHTML = state.currentInstruction;
             instructions.classList.add('active');
-        } else {
+        } else if (state.pendingSnakeLadder) {
+            // Was on board with pending snake/ladder
             showPage('board');
+            rollDiceButton.textContent = '➡️ Continue';
+            
+            // Highlight destination square
+            const finalPosition = state.pendingSnakeLadder.to;
+            const destSquare = document.getElementById(`square-${finalPosition}`);
+            if (destSquare) {
+                destSquare.classList.add(
+                    state.pendingSnakeLadder.type === 'snake' ? 'snake-destination' : 'ladder-destination'
+                );
+            }
+            
+            // Set up continue handler
+            rollDiceButton.onclick = () => {
+                if (destSquare) {
+                    destSquare.classList.remove('snake-destination', 'ladder-destination');
+                }
+                showPage('task');
+                window.displaySnakeLadderTask(
+                    state.pendingSnakeLadder.type,
+                    state.pendingSnakeLadder.from,
+                    state.pendingSnakeLadder.to
+                );
+            };
+        } else {
+            // Was on board waiting for roll
+            showPage('board');
+            rollDiceButton.textContent = '🎲 Roll Dice';
         }
         
         console.log('✅ Game restored');
