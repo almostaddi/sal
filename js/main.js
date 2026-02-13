@@ -67,6 +67,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load saved game state
     const savedState = loadGameState();
     
+    // PRE-SET UI elements BEFORE showing page to prevent flash
+    if (savedState && savedState.gameStarted) {
+        // Update turn counter and dice result immediately
+        document.getElementById('turnCounter').textContent = `Turn: ${savedState.turnCount}`;
+        document.getElementById('diceResult').textContent = savedState.diceResultText || 'Dice: -';
+        
+        // Update button text based on phase
+        const rollDiceButton = document.getElementById('rollDice');
+        const phase = savedState.gamePhase || 'awaiting_dice_roll';
+        
+        if (phase === 'awaiting_normal_task' || 
+            phase === 'awaiting_snake_ladder_task' || 
+            phase === 'awaiting_snake_ladder_movement') {
+            rollDiceButton.textContent = '➡️ Continue';
+        } else {
+            rollDiceButton.textContent = '🎲 Roll Dice';
+        }
+    }
+    
     // Determine which page to show based on game phase
     let initialPage = 'home'; // Default
     if (savedState && savedState.gameStarted) {
@@ -89,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     console.log('📄 Initial page:', initialPage, '| Phase:', savedState?.gamePhase);
     
-    // Show the correct page immediately
+    // Show the correct page immediately (after UI is pre-set)
     showPage(initialPage);
     
     // Initialize board
@@ -270,9 +289,7 @@ function restoreSavedGame(state) {
         // Restore player position
         setPlayerPosition(state.playerPosition);
         
-        // Update UI
-        document.getElementById('turnCounter').textContent = `Turn: ${state.turnCount}`;
-        document.getElementById('diceResult').textContent = state.diceResultText || 'Dice: -';
+        // Note: Turn counter and dice result already set in DOMContentLoaded
         
         const rollDiceButton = document.getElementById('rollDice');
         const phase = state.gamePhase || 'awaiting_dice_roll';
@@ -295,7 +312,7 @@ function restoreSavedGame(state) {
             }
         } else if (phase === 'awaiting_snake_ladder_task') {
             // Waiting to show snake/ladder task
-            rollDiceButton.textContent = '➡️ Continue';
+            // Button text already set to Continue
             rollDiceButton.disabled = false;
             
             // Highlight destination
@@ -321,7 +338,7 @@ function restoreSavedGame(state) {
             }
         } else if (phase === 'awaiting_snake_ladder_movement') {
             // Waiting to move piece after snake/ladder task
-            rollDiceButton.textContent = '➡️ Continue';
+            // Button text already set to Continue
             rollDiceButton.disabled = false;
             
             if (state.pendingSnakeLadder) {
@@ -371,7 +388,7 @@ function restoreSavedGame(state) {
             }
         } else if (phase === 'awaiting_normal_task') {
             // Waiting to show normal task
-            rollDiceButton.textContent = '➡️ Continue';
+            // Button text already set to Continue
             rollDiceButton.disabled = false;
             rollDiceButton.onclick = () => {
                 showPage('task');
@@ -379,7 +396,7 @@ function restoreSavedGame(state) {
             };
         } else {
             // awaiting_dice_roll or default
-            rollDiceButton.textContent = '🎲 Roll Dice';
+            // Button text already set to Roll Dice
             rollDiceButton.disabled = false;
             rollDiceButton.onclick = rollDice;
         }
