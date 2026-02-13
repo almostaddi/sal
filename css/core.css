@@ -197,6 +197,7 @@ a:hover {
 }
 
 /* Fixed position buttons (Reset, Patch Notes) */
+/* Hidden by default to prevent flash on page load */
 #resetBtn,
 #patchNotesBtn {
     position: fixed;
@@ -207,6 +208,13 @@ a:hover {
     z-index: 1000;
     text-transform: none;
     letter-spacing: normal;
+    display: none;
+}
+
+/* Show buttons when explicitly enabled */
+body.show-fixed-buttons #resetBtn,
+body.show-fixed-buttons #patchNotesBtn {
+    display: block;
 }
 
 #patchNotesBtn {
