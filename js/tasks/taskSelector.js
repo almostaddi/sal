@@ -1,4 +1,4 @@
-// Task selection logic
+// Task selection logic 
 
 import { getTaskConditions } from '../state/gameState.js';
 
