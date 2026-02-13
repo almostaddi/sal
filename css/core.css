@@ -211,10 +211,10 @@ a:hover {
     display: none;
 }
 
-/* Show buttons when explicitly enabled */
+/* Show buttons when explicitly enabled - use !important to override inline style */
 body.show-fixed-buttons #resetBtn,
 body.show-fixed-buttons #patchNotesBtn {
-    display: block;
+    display: block !important;
 }
 
 #patchNotesBtn {
