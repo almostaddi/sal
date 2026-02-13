@@ -64,6 +64,8 @@ export function initializeState() {
         },
         totalSquares: 100,
         currentInstruction: '', // Save current task HTML for restoration
+        diceResultText: 'Dice: -',
+        pendingSnakeLadder: null,
         
         // Task selection control
         forceNextTask: null,
@@ -87,25 +89,21 @@ export function initializeGameFunctions(onTaskCompleteCallback) {
 }
 
 // Save game state to localStorage
-export function saveGameState(playerPosition = null, pendingSnakeLadder = null, diceResultText = null) {
+export function saveGameState() {
+    // Always save the complete current state
     const state = {
         ...window.GAME_STATE,
         disabledTasks: Array.from(window.GAME_STATE.disabledTasks),
         lastSaved: Date.now()
     };
     
-    // Add optional runtime values
-    if (playerPosition !== null) {
-        state.playerPosition = playerPosition;
-    }
-    if (pendingSnakeLadder !== null) {
-        state.pendingSnakeLadder = pendingSnakeLadder;
-    }
-    if (diceResultText !== null) {
-        state.diceResultText = diceResultText;
-    }
-    
     localStorage.setItem('snakesLaddersGameState', JSON.stringify(state));
+    console.log('💾 Game state saved:', {
+        gameStarted: state.gameStarted,
+        playerPosition: state.playerPosition,
+        turnCount: state.turnCount,
+        diceResultText: state.diceResultText
+    });
 }
 
 // Load game state from localStorage
@@ -115,6 +113,13 @@ export function loadGameState() {
     
     try {
         const state = JSON.parse(saved);
+        
+        console.log('📂 Loading saved state:', {
+            gameStarted: state.gameStarted,
+            playerPosition: state.playerPosition,
+            turnCount: state.turnCount,
+            diceResultText: state.diceResultText
+        });
         
         // Restore game state
         Object.assign(window.GAME_STATE, state);
@@ -155,6 +160,8 @@ export function resetGameState() {
     window.GAME_STATE.cageLocked = false;
     window.GAME_STATE.cageWorn = false;
     window.GAME_STATE.currentInstruction = '';
+    window.GAME_STATE.diceResultText = 'Dice: -';
+    window.GAME_STATE.pendingSnakeLadder = null;
     
     // Reset body part state
     window.GAME_STATE.bodyPartState = {
