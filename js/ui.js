@@ -520,17 +520,86 @@ function createSetDifficultySection(toyId, toyData) {
         diffControls.appendChild(diffSelect);
         
         // Gear button (for add/remove settings)
+        const isWearable = window.isToyWearable ? window.isToyWearable(toyId) : false;
         const gearBtn = document.createElement('button');
         gearBtn.className = 'gear-btn';
         gearBtn.textContent = '⚙️';
-        gearBtn.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey];
-        // TODO: Add gear button functionality for advanced settings
+        gearBtn.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey] || !isWearable;
+        gearBtn.title = isWearable ? 'Advanced Settings' : 'This toy cannot be worn/held';
+        
+        if (isWearable) {
+            gearBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const advSettings = setItem.querySelector('.advanced-settings');
+                if (advSettings) {
+                    if (advSettings.classList.contains('visible')) {
+                        advSettings.classList.remove('visible');
+                        gearBtn.classList.remove('active');
+                    } else {
+                        advSettings.classList.add('visible');
+                        gearBtn.classList.add('active');
+                    }
+                }
+            });
+        }
         diffControls.appendChild(gearBtn);
         
         diffRow.appendChild(diffControls);
         setItem.appendChild(diffRow);
         
-        // TODO: Add advanced settings panel
+        // Advanced settings panel
+        if (isWearable) {
+            const advSettings = document.createElement('div');
+            advSettings.className = 'advanced-settings';
+            
+            // Add chance input
+            const addLabel = document.createElement('label');
+            addLabel.textContent = 'Add: ';
+            const addInput = document.createElement('input');
+            addInput.type = 'number';
+            addInput.min = '0';
+            addInput.max = '100';
+            addInput.value = (toyId === 'cage' && window.GAME_STATE.cageLocked) ? 0 : (window.GAME_STATE.toyModifiers[toyKey]?.addChance ?? 10);
+            addInput.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey] || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+            addInput.addEventListener('input', function(e) {
+                const val = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
+                e.target.value = val;
+                if (!window.GAME_STATE.toyModifiers[toyKey]) {
+                    window.GAME_STATE.toyModifiers[toyKey] = { addChance: 10, removeChance: 20 };
+                }
+                window.GAME_STATE.toyModifiers[toyKey].addChance = val;
+                updateContinuousTaskProbabilities();
+                saveGameState();
+            });
+            addLabel.appendChild(addInput);
+            addLabel.appendChild(document.createTextNode('%'));
+            advSettings.appendChild(addLabel);
+            
+            // Remove chance input
+            const removeLabel = document.createElement('label');
+            removeLabel.textContent = 'Remove: ';
+            const removeInput = document.createElement('input');
+            removeInput.type = 'number';
+            removeInput.min = '0';
+            removeInput.max = '100';
+            removeInput.value = (toyId === 'cage' && window.GAME_STATE.cageLocked) ? 0 : (window.GAME_STATE.toyModifiers[toyKey]?.removeChance ?? 20);
+            removeInput.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey] || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+            removeInput.addEventListener('input', function(e) {
+                const val = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
+                e.target.value = val;
+                if (!window.GAME_STATE.toyModifiers[toyKey]) {
+                    window.GAME_STATE.toyModifiers[toyKey] = { addChance: 10, removeChance: 20 };
+                }
+                window.GAME_STATE.toyModifiers[toyKey].removeChance = val;
+                updateContinuousTaskProbabilities();
+                saveGameState();
+            });
+            removeLabel.appendChild(removeInput);
+            removeLabel.appendChild(document.createTextNode('%'));
+            advSettings.appendChild(removeLabel);
+            
+            setItem.appendChild(advSettings);
+        }
         
         section.appendChild(setItem);
     });
