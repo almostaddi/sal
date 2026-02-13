@@ -195,6 +195,11 @@ function startGame() {
     document.getElementById('turnCounter').textContent = 'Turn: 0';
     document.getElementById('diceResult').textContent = 'Dice: -';
     
+    // Set up initial roll dice button handler
+    const rollDiceButton = document.getElementById('rollDice');
+    rollDiceButton.onclick = rollDice;
+    rollDiceButton.disabled = false;
+    
     // Save state
     saveGameState();
     
@@ -241,6 +246,11 @@ function restoreSavedGame() {
         // Update UI
         document.getElementById('turnCounter').textContent = `Turn: ${state.turnCount}`;
         document.getElementById('diceResult').textContent = state.diceResultText || 'Dice: -';
+        
+        // Set up roll dice button handler
+        const rollDiceButton = document.getElementById('rollDice');
+        rollDiceButton.onclick = rollDice;
+        rollDiceButton.disabled = false;
         
         // Show appropriate page
         if (state.currentInstruction && state.currentInstruction.trim() !== '') {
