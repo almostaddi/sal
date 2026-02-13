@@ -44,8 +44,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeState();
     initializeGameFunctions(onTaskComplete);
     
-    // Try to load saved game state
+    // Try to load saved game state IMMEDIATELY
     const savedState = loadGameState();
+    
+    // Determine which page to show BEFORE any rendering
+    const targetPage = determineInitialPage(savedState);
+    console.log('📄 Initial page:', targetPage);
+    
+    // Show the correct page immediately
+    showPage(targetPage);
     
     // Initialize board
     const initialBoardSize = savedState?.totalSquares || 100;
@@ -75,6 +82,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     console.log('✅ Game Initialized');
 });
+
+// Determine which page to show on load
+function determineInitialPage(savedState) {
+    if (!savedState || !savedState.gameStarted) {
+        return 'home';
+    }
+    
+    // If there's a current instruction, show task page
+    if (savedState.currentInstruction && savedState.currentInstruction.trim() !== '') {
+        return 'task';
+    }
+    
+    // Otherwise show board
+    return 'board';
+}
 
 // Set up event listeners
 function setupEventListeners() {
@@ -135,7 +157,6 @@ function setupEventListeners() {
 export function showPage(pageName) {
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
-        page.classList.add('hidden');
         page.style.display = 'none';
     });
     
@@ -143,7 +164,6 @@ export function showPage(pageName) {
     if (targetPage) {
         targetPage.style.display = 'block';
         targetPage.classList.add('active');
-        targetPage.classList.remove('hidden');
     }
 }
 
@@ -248,20 +268,27 @@ function restoreSavedGame(state) {
         
         // Set up roll dice button handler
         const rollDiceButton = document.getElementById('rollDice');
-        rollDiceButton.onclick = rollDice;
-        rollDiceButton.disabled = false;
         
-        // Determine which page to show
+        // Determine which page to show and set up appropriate handlers
         if (state.currentInstruction && state.currentInstruction.trim() !== '') {
-            // Was on task page
-            showPage('task');
+            // Was on task page - restore the instruction and continue button
             const instructions = document.getElementById('instructions');
             instructions.innerHTML = state.currentInstruction;
             instructions.classList.add('active');
+            
+            // Re-attach the continue button event handler
+            const continueButton = instructions.querySelector('#continueButton');
+            if (continueButton) {
+                continueButton.onclick = () => {
+                    if (window.GAME_FUNCTIONS && window.GAME_FUNCTIONS.completeTask) {
+                        window.GAME_FUNCTIONS.completeTask();
+                    }
+                };
+            }
         } else if (state.pendingSnakeLadder) {
             // Was on board with pending snake/ladder
-            showPage('board');
             rollDiceButton.textContent = '➡️ Continue';
+            rollDiceButton.disabled = false;
             
             // Highlight destination square
             const finalPosition = state.pendingSnakeLadder.to;
@@ -286,8 +313,9 @@ function restoreSavedGame(state) {
             };
         } else {
             // Was on board waiting for roll
-            showPage('board');
             rollDiceButton.textContent = '🎲 Roll Dice';
+            rollDiceButton.disabled = false;
+            rollDiceButton.onclick = rollDice;
         }
         
         console.log('✅ Game restored');
