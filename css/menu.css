@@ -1,13 +1,9 @@
-/* Page visibility system */
-#homePage,
-#boardPage,
-#taskPage {
+/* Page visibility system - ALL pages hidden by default */
+.page {
     display: none;
 }
 
-#homePage.active,
-#boardPage.active,
-#taskPage.active {
+.page.active {
     display: block;
 }
 
