@@ -35,6 +35,8 @@ export function animatePlayer(start, end, callback, instant = false) {
 
 // Roll dice
 export function rollDice() {
+    console.trace('rollDice was called by:'); 
+    
     if (isRolling) {
         console.log('Already rolling, ignoring click');
         return;
