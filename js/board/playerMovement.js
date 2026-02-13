@@ -200,7 +200,7 @@ export function onTaskComplete() {
         const rollDiceButton = document.getElementById('rollDice');
         rollDiceButton.textContent = '🎲 Roll Dice';
         rollDiceButton.disabled = false;
-        rollDiceButton.onclick = rollDice;
+        //rollDiceButton.onclick = rollDice;
     }
 }
 
