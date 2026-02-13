@@ -29,28 +29,38 @@ export async function loadTaskRegistry() {
             for (const filePath of taskFiles) {
                 const taskDef = await loadTaskDefinition(filePath);
                 
-                if (!taskDef) continue;
+                if (!taskDef) {
+                    console.warn(`⚠️ Failed to load: ${filePath}`);
+                    continue;
+                }
                 
                 // Handle fallbacks
                 if (category === '_fallbacks') {
-                    if (taskDef.type === 'snake-fallback') {
+                    if (taskDef.type === 'snake' && taskDef.isFallback) {
                         taskRegistry.fallbacks.snake = { ...taskDef, filePath };
-                    } else if (taskDef.type === 'ladder-fallback') {
+                        console.log(`✅ Loaded snake fallback: ${filePath}`);
+                    } else if (taskDef.type === 'ladder' && taskDef.isFallback) {
                         taskRegistry.fallbacks.ladder = { ...taskDef, filePath };
-                    } else if (taskDef.type === 'final-fallback') {
+                        console.log(`✅ Loaded ladder fallback: ${filePath}`);
+                    } else if (taskDef.type === 'final') {
                         taskRegistry.fallbacks.final = { ...taskDef, filePath };
+                        console.log(`✅ Loaded final fallback: ${filePath}`);
                     } else if (taskDef.type === 'general-fallback') {
                         taskRegistry.fallbacks.general = { ...taskDef, filePath };
+                        console.log(`✅ Loaded general fallback: ${filePath}`);
                     }
                 }
                 // Handle set-specific tasks
                 else if (taskRegistry.sets[category]) {
                     if (taskDef.type === 'snake') {
                         taskRegistry.sets[category].snakes.push({ ...taskDef, filePath });
+                        console.log(`✅ Loaded: ${filePath}`);
                     } else if (taskDef.type === 'ladder') {
                         taskRegistry.sets[category].ladders.push({ ...taskDef, filePath });
+                        console.log(`✅ Loaded: ${filePath}`);
                     } else if (taskDef.type === 'final') {
                         taskRegistry.sets[category].finals.push({ ...taskDef, filePath });
+                        console.log(`✅ Loaded: ${filePath}`);
                     } else {
                         // Regular set task
                         const toyId = taskDef.toyId;
@@ -58,14 +68,16 @@ export async function loadTaskRegistry() {
                             taskRegistry.sets[category].tasks[toyId] = [];
                         }
                         taskRegistry.sets[category].tasks[toyId].push({ ...taskDef, filePath });
+                        console.log(`✅ Loaded: ${filePath}`);
                     }
                 }
-                
-                console.log(`✅ Loaded: ${filePath}`);
             }
         }
         
-        console.log('Task registry loaded:', taskRegistry);
+        console.log('📋 Task registry loaded:', taskRegistry);
+        console.log('🐍 Snake fallback:', taskRegistry.fallbacks.snake);
+        console.log('🪜 Ladder fallback:', taskRegistry.fallbacks.ladder);
+        
         return taskRegistry;
     } catch (error) {
         console.error('Failed to load task registry:', error);
@@ -79,8 +91,8 @@ async function loadTaskDefinition(filePath) {
         const module = await import(`/${filePath}`);
         return module.default;
     } catch (error) {
-        // Don't log errors - files might not exist
-        throw error;
+        console.error(`Failed to load ${filePath}:`, error);
+        return null;
     }
 }
 
@@ -182,6 +194,7 @@ export function selectNextTask() {
     
     // 8. If no tasks available, use general fallback
     if (weighted.length === 0) {
+        console.warn('No tasks available, using general fallback');
         return taskRegistry.fallbacks.general;
     }
     
@@ -222,6 +235,7 @@ export function selectSnakeLadderTask(type, fromPos, toPos) {
     // If set-specific tasks available, pick one
     if (availableTasks.length > 0) {
         const taskToUse = availableTasks[Math.floor(Math.random() * availableTasks.length)];
+        console.log(`Using set-specific ${type} task:`, taskToUse);
         return { task: taskToUse, snakeLadderInfo };
     }
     
@@ -230,6 +244,14 @@ export function selectSnakeLadderTask(type, fromPos, toPos) {
         taskRegistry.fallbacks.snake : 
         taskRegistry.fallbacks.ladder;
     
+    if (!fallbackTask) {
+        console.error(`No ${type} fallback task found!`);
+        console.log('Task registry:', taskRegistry);
+        // Return general fallback as last resort
+        return { task: taskRegistry.fallbacks.general, snakeLadderInfo };
+    }
+    
+    console.log(`Using ${type} fallback task:`, fallbackTask);
     return { task: fallbackTask, snakeLadderInfo };
 }
 
