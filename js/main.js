@@ -67,6 +67,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load saved game state
     const savedState = loadGameState();
     
+    // Initialize board EARLY (before showing page)
+    const initialBoardSize = savedState?.totalSquares || 100;
+    boardRenderer = new BoardRenderer(initialBoardSize);
+    boardRenderer.create();
+    
     // PRE-SET UI elements BEFORE showing page to prevent flash
     if (savedState && savedState.gameStarted) {
         // Update turn counter and dice result immediately
@@ -83,6 +88,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             rollDiceButton.textContent = '➡️ Continue';
         } else {
             rollDiceButton.textContent = '🎲 Roll Dice';
+        }
+        
+        // PRE-POSITION the player piece (before showing page)
+        if (savedState.playerPosition > 0) {
+            setPlayerPosition(savedState.playerPosition);
         }
     }
     
@@ -110,11 +120,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Show the correct page immediately (after UI is pre-set)
     showPage(initialPage);
-    
-    // Initialize board
-    const initialBoardSize = savedState?.totalSquares || 100;
-    boardRenderer = new BoardRenderer(initialBoardSize);
-    boardRenderer.create();
     
     // Initialize UI
     initializeUI();
@@ -283,13 +288,7 @@ function restoreSavedGame(state) {
     
     // If game was in progress, restore board
     if (state.gameStarted) {
-        boardRenderer.updateSize(state.totalSquares);
-        boardRenderer.create();
-        
-        // Restore player position
-        setPlayerPosition(state.playerPosition);
-        
-        // Note: Turn counter and dice result already set in DOMContentLoaded
+        // Note: Board already created and player already positioned in DOMContentLoaded
         
         const rollDiceButton = document.getElementById('rollDice');
         const phase = state.gamePhase || 'awaiting_dice_roll';
