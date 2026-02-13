@@ -17,7 +17,9 @@
     <!-- HOME PAGE - Settings and Start Game -->
     <div id="homePage" class="page">
         <div>
+            <button id="resetBtn">🔄 Reset Settings</button>
             <button id="startButton">🎮 Start Game</button>
+            <button id="patchNotesBtn">📋 Notes</button>
         </div>
         <div id="buttoncontainer">
             <div class="settings-column-left">
@@ -241,8 +243,9 @@
         <div id="instructions"></div>
     </div>
     
-    <button id="resetBtn">🔄 Reset</button>
-    <button id="patchNotesBtn">📋 Notes</button>
+    <!-- Reset and Notes buttons (shown during game in fixed positions) -->
+    <button id="resetBtn" style="display: none;">🔄 Reset</button>
+    <button id="patchNotesBtn" style="display: none;">📋 Notes</button>
     
     <div id="patchNotesModal" class="modal">
         <div class="modal-content">
