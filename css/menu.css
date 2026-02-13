@@ -1,17 +1,11 @@
 /* Page visibility system */
-#homePage {
-    display: block;
-}
-
+#homePage,
 #boardPage,
 #taskPage {
     display: none;
 }
 
-#homePage.hidden {
-    display: none;
-}
-
+#homePage.active,
 #boardPage.active,
 #taskPage.active {
     display: block;
