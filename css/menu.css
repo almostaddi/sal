@@ -30,6 +30,29 @@ h1 {
     gap: 15px;
 }
 
+/* Home page specific button styles */
+#homeResetBtn {
+    padding: 10px 20px;
+    font-size: 14px;
+    background: var(--danger-gradient);
+    box-shadow: 0 4px 15px rgba(250, 82, 82, 0.4);
+}
+
+#homeResetBtn:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(250, 82, 82, 0.5);
+}
+
+#homePatchNotesBtn {
+    padding: 10px 20px;
+    font-size: 14px;
+    background: var(--orange-gradient);
+    box-shadow: 0 4px 15px rgba(245, 159, 11, 0.4);
+}
+
+#homePatchNotesBtn:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(245, 159, 11, 0.5);
+}
+
 #startButton {
     padding: 20px 50px;
     font-size: 24px;
