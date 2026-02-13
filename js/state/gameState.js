@@ -1,5 +1,7 @@
 // Game state management and persistence
 
+import { getClothesPegMax } from '../data/instructionSets.js';
+
 // Initialize game state
 export function initializeState() {
     window.GAME_STATE = {
@@ -228,7 +230,7 @@ export function getTaskConditions() {
         },
         
         bodyPartEmpty: (bodyPartKey) => {
-            return window.GAME_STATE.bodyPartState[bodyPartKey].items.length === 0;
+            return isBodyPartEmpty(bodyPartKey);
         },
         
         bodyPartHas: (bodyPartKey, toyId) => {
@@ -236,23 +238,20 @@ export function getTaskConditions() {
         },
         
         bodyPartHasRegularToys: (bodyPartKey) => {
-            return window.GAME_STATE.bodyPartState[bodyPartKey].items.some(item => item !== 'pegs');
+            return hasRegularToys(bodyPartKey);
         },
         
         bodyPartHasClothesPegs: (bodyPartKey) => {
-            return window.GAME_STATE.bodyPartState[bodyPartKey].items.some(item => item === 'pegs');
+            return hasClothesPegs(bodyPartKey);
         },
         
         isBodyPartOccupied: (bodyPartKey) => {
             return window.GAME_STATE.bodyPartState[bodyPartKey] && 
-                   window.GAME_STATE.bodyPartState[bodyPartKey].items.length > 0;
+                   !isBodyPartEmpty(bodyPartKey);
         },
         
         canBodyPartHold: (bodyPartKey, toyId) => {
-            // Will be implemented in bodyParts.js
-            return window.canAddToyToBodyPart ? 
-                window.canAddToyToBodyPart(bodyPartKey, toyId) : 
-                false;
+            return canAddToyToBodyPart(bodyPartKey, toyId);
         },
         
         // Multiple toy checks
@@ -296,5 +295,68 @@ export function getTaskConditions() {
     };
 }
 
-// Expose getTaskConditions globally
+// Body part manipulation functions
+
+// Check if body part is empty
+export function isBodyPartEmpty(bodyPart) {
+    return window.GAME_STATE.bodyPartState[bodyPart].items.length === 0;
+}
+
+// Check if body part has clothes pegs
+export function hasClothesPegs(bodyPart) {
+    return window.GAME_STATE.bodyPartState[bodyPart].items.some(item => item === 'pegs');
+}
+
+// Check if body part has regular toys (non-pegs)
+export function hasRegularToys(bodyPart) {
+    return window.GAME_STATE.bodyPartState[bodyPart].items.some(item => item !== 'pegs');
+}
+
+// Get clothes peg count in body part
+export function hasClothesPegCount(bodyPart) {
+    return window.GAME_STATE.bodyPartState[bodyPart].items.filter(item => item === 'pegs').length;
+}
+
+// Check if toy can be added to body part
+export function canAddToyToBodyPart(bodyPart, toyId) {
+    if (toyId === 'pegs') {
+        // Clothes Pegs case - can't add if body part has regular toys
+        if (hasRegularToys(bodyPart)) {
+            return false;
+        }
+        // Check if under max count
+        const currentCount = hasClothesPegCount(bodyPart);
+        const maxCount = getClothesPegMax(bodyPart);
+        return currentCount < maxCount;
+    } else {
+        // Regular toy case - body part must be completely empty
+        return isBodyPartEmpty(bodyPart);
+    }
+}
+
+// Add toy to body part
+export function addToyToBodyPart(bodyPart, toyId) {
+    if (canAddToyToBodyPart(bodyPart, toyId)) {
+        window.GAME_STATE.bodyPartState[bodyPart].items.push(toyId);
+        saveGameState();
+        return true;
+    }
+    return false;
+}
+
+// Remove toy from body part
+export function removeToyFromBodyPart(bodyPart, toyId) {
+    const index = window.GAME_STATE.bodyPartState[bodyPart].items.indexOf(toyId);
+    if (index > -1) {
+        window.GAME_STATE.bodyPartState[bodyPart].items.splice(index, 1);
+        saveGameState();
+        return true;
+    }
+    return false;
+}
+
+// Expose functions globally
 window.getConditions = getTaskConditions;
+window.canAddToyToBodyPart = canAddToyToBodyPart;
+window.addToyToBodyPart = addToyToBodyPart;
+window.removeToyFromBodyPart = removeToyFromBodyPart;
