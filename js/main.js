@@ -15,7 +15,8 @@ import {
     rollDice, 
     onTaskComplete, 
     setPlayerPosition,
-    resetPlayerState
+    resetPlayerState,
+    animatePlayer
 } from './board/playerMovement.js';
 
 // Task system
@@ -324,11 +325,48 @@ function restoreSavedGame(state) {
             rollDiceButton.disabled = false;
             
             if (state.pendingSnakeLadder) {
+                const savedPending = state.pendingSnakeLadder;
+                
                 rollDiceButton.onclick = () => {
-                    // This will trigger the movement animation
-                    if (window.GAME_FUNCTIONS && window.GAME_FUNCTIONS.completeTask) {
-                        window.GAME_FUNCTIONS.completeTask();
-                    }
+                    rollDiceButton.disabled = true;
+                    rollDiceButton.onclick = null;
+                    
+                    // Directly animate the movement
+                    animatePlayer(savedPending.from, savedPending.to, () => {
+                        // Update player position
+                        setPlayerPosition(savedPending.to);
+                        window.GAME_STATE.playerPosition = savedPending.to;
+                        
+                        const totalSquares = window.GAME_STATE.totalSquares || 100;
+                        
+                        // Check if final square after snake/ladder
+                        if (savedPending.to === totalSquares) {
+                            // STATE: Ready for final challenge
+                            window.GAME_STATE.gamePhase = 'awaiting_final_challenge';
+                            window.GAME_STATE.pendingSnakeLadder = null;
+                            window.GAME_FUNCTIONS.saveState();
+                            
+                            showPage('task');
+                            window.displayFinalChallenge();
+                            return;
+                        }
+                        
+                        // STATE: Waiting to show normal task at destination
+                        window.GAME_STATE.gamePhase = 'awaiting_normal_task';
+                        window.GAME_STATE.pendingSnakeLadder = null;
+                        window.GAME_FUNCTIONS.saveState();
+                        
+                        // Stay on board, show Continue button for the destination square task
+                        rollDiceButton.textContent = '➡️ Continue';
+                        rollDiceButton.disabled = false;
+                        rollDiceButton.onclick = null;
+                        
+                        // Second continue: show the normal task at destination square
+                        rollDiceButton.onclick = () => {
+                            showPage('task');
+                            window.displayRandomInstructionWithAddRemove(savedPending.addRemoveTask);
+                        };
+                    }, true);
                 };
             }
         } else if (phase === 'awaiting_normal_task') {
