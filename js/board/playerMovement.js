@@ -98,6 +98,7 @@ export function rollDice() {
             addRemoveTask.execute();
         }
         
+        // CRITICAL: Save state after moving to new position
         window.GAME_FUNCTIONS.saveState();
         
         // Check if final square
@@ -189,10 +190,12 @@ export function onTaskComplete() {
                 
                 const totalSquares = window.GAME_STATE.totalSquares || 100;
                 
+                // CRITICAL: Clear pending and save state after moving
+                window.GAME_STATE.pendingSnakeLadder = null;
+                window.GAME_FUNCTIONS.saveState();
+                
                 // Check if final square after snake/ladder
                 if (playerPosition === totalSquares) {
-                    window.GAME_STATE.pendingSnakeLadder = null;
-                    window.GAME_FUNCTIONS.saveState();
                     window.showPage('task');
                     window.displayFinalChallenge();
                     return;
@@ -203,17 +206,19 @@ export function onTaskComplete() {
                 rollDiceButton.disabled = false;
                 rollDiceButton.onclick = null; // Clear first
                 
-                // Clear pending since we've moved
-                window.GAME_STATE.pendingSnakeLadder = null;
-                window.GAME_FUNCTIONS.saveState();
-                
                 // Second continue: show the normal task at destination square
                 rollDiceButton.onclick = () => {
                     window.showPage('task');
                     window.displayRandomInstructionWithAddRemove(savedPending.addRemoveTask);
                 };
+                
+                // CRITICAL: Save state after setting up for next task
+                window.GAME_FUNCTIONS.saveState();
             }, true);
         };
+        
+        // CRITICAL: Save state after setting up continue button
+        window.GAME_FUNCTIONS.saveState();
     } else {
         // No snake/ladder, go back to board for next roll
         window.showPage('board');
@@ -224,10 +229,10 @@ export function onTaskComplete() {
         // Clear onclick first to prevent issues
         rollDiceButton.onclick = null;
         rollDiceButton.onclick = rollDice;
+        
+        // CRITICAL: Save state before next roll
+        window.GAME_FUNCTIONS.saveState();
     }
-    
-    // Save state after clearing instruction
-    window.GAME_FUNCTIONS.saveState();
 }
 
 // Get current player position
