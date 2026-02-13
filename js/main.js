@@ -36,17 +36,50 @@ import { INSTRUCTION_SETS } from './data/instructionSets.js';
 let boardRenderer;
 let taskRegistryLoaded = false;
 
+// Show/hide pages
+function showPage(pageName) {
+    console.log('🔄 Switching to page:', pageName);
+    
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Show target page
+    const targetPage = document.getElementById(pageName + 'Page');
+    if (targetPage) {
+        targetPage.classList.add('active');
+        console.log('✅ Now showing:', pageName);
+    } else {
+        console.error('❌ Page not found:', pageName + 'Page');
+    }
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎲 Snakes and Ladders - Initializing...');
-    console.log('📄 Preloaded page:', window.__INITIAL_PAGE__);
     
-    // Initialize state FIRST (before loading saved game)
+    // Initialize state FIRST
     initializeState();
     initializeGameFunctions(onTaskComplete);
     
     // Load saved game state
     const savedState = loadGameState();
+    
+    // Determine which page to show
+    let initialPage = 'home'; // Default
+    if (savedState && savedState.gameStarted) {
+        if (savedState.currentInstruction && savedState.currentInstruction.trim() !== '') {
+            initialPage = 'task';
+        } else {
+            initialPage = 'board';
+        }
+    }
+    
+    console.log('📄 Initial page:', initialPage);
+    
+    // Show the correct page immediately
+    showPage(initialPage);
     
     // Initialize board
     const initialBoardSize = savedState?.totalSquares || 100;
@@ -69,9 +102,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup event listeners
     setupEventListeners();
     
-    // NOTE: preload.js already showed the correct page
-    // We only need to restore game state, not call showPage again
-    
     // Restore saved game if exists
     if (savedState) {
         restoreSavedGame(savedState);
@@ -84,9 +114,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupEventListeners() {
     // Start game button
     document.getElementById('startButton').addEventListener('click', startGame);
-    
-    // Roll dice button - DO NOT add event listener here
-    // The onclick handler is managed by playerMovement.js
     
     // Board size selector
     document.getElementById('boardSizeSelect').addEventListener('change', updateBoardSize);
@@ -133,25 +160,6 @@ function setupEventListeners() {
             boardRenderer.scale();
         }
     });
-}
-
-// Show/hide pages
-export function showPage(pageName) {
-    console.log('🔄 Switching to page:', pageName);
-    
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-        page.style.display = 'none';
-    });
-    
-    const targetPage = document.getElementById(pageName + 'Page');
-    if (targetPage) {
-        targetPage.style.display = 'block';
-        targetPage.classList.add('active');
-        console.log('✅ Now showing:', pageName);
-    } else {
-        console.error('❌ Page not found:', pageName + 'Page');
-    }
 }
 
 // Start game
