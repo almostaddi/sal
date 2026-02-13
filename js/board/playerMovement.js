@@ -98,11 +98,13 @@ export function rollDice() {
             addRemoveTask.execute();
         }
         
-        // CRITICAL: Save state after moving to new position
-        window.GAME_FUNCTIONS.saveState();
-        
         // Check if final square
         if (playerPosition === totalSquares) {
+            // STATE: Ready for final challenge
+            window.GAME_STATE.gamePhase = 'awaiting_final_challenge';
+            window.GAME_STATE.pendingSnakeLadder = null;
+            window.GAME_FUNCTIONS.saveState();
+            
             window.showPage('task');
             window.displayFinalChallenge();
             isRolling = false;
@@ -133,7 +135,8 @@ export function rollDice() {
                 addRemoveTask: addRemoveTask
             };
             
-            // Save pending snake/ladder to state
+            // STATE: Waiting to show snake/ladder task
+            window.GAME_STATE.gamePhase = 'awaiting_snake_ladder_task';
             window.GAME_STATE.pendingSnakeLadder = pendingSnakeLadder;
             window.GAME_FUNCTIONS.saveState();
             
@@ -146,8 +149,13 @@ export function rollDice() {
                 window.displaySnakeLadderTask(pendingSnakeLadder.type, pendingSnakeLadder.from, pendingSnakeLadder.to);
             };
         } else {
-            // Normal square: Continue goes to normal task
+            // STATE: Waiting to show normal task
+            window.GAME_STATE.gamePhase = 'awaiting_normal_task';
             window.GAME_STATE.pendingSnakeLadder = null;
+            window.GAME_STATE.pendingAddRemoveTask = addRemoveTask ? {
+                getHTML: addRemoveTask.getHTML ? addRemoveTask.getHTML() : null,
+                executed: true
+            } : null;
             window.GAME_FUNCTIONS.saveState();
             
             rollDiceButton.onclick = () => {
@@ -167,21 +175,25 @@ export function onTaskComplete() {
     // Clear current instruction when returning to board
     window.GAME_STATE.currentInstruction = '';
     
-    // If there's a pending snake/ladder, go back to board to move piece
-    if (window.GAME_STATE.pendingSnakeLadder) {
+    // Check what phase we're in
+    if (window.GAME_STATE.gamePhase === 'awaiting_snake_ladder_task') {
+        // Just completed snake/ladder task, need to move piece
         const savedPending = window.GAME_STATE.pendingSnakeLadder;
+        
+        // STATE: Need to move piece after snake/ladder
+        window.GAME_STATE.gamePhase = 'awaiting_snake_ladder_movement';
+        window.GAME_FUNCTIONS.saveState();
+        
         window.showPage('board');
         const rollDiceButton = document.getElementById('rollDice');
         rollDiceButton.textContent = '➡️ Continue';
         rollDiceButton.disabled = false;
-        
-        // Remove existing onclick to prevent double-firing
         rollDiceButton.onclick = null;
         
-        // First continue: animate the piece movement
+        // Continue button moves the piece
         rollDiceButton.onclick = () => {
             rollDiceButton.disabled = true;
-            rollDiceButton.onclick = null; // Clear again
+            rollDiceButton.onclick = null;
             
             animatePlayer(savedPending.from, savedPending.to, () => {
                 playerPosition = savedPending.to;
@@ -190,48 +202,49 @@ export function onTaskComplete() {
                 
                 const totalSquares = window.GAME_STATE.totalSquares || 100;
                 
-                // CRITICAL: Clear pending and save state after moving
-                window.GAME_STATE.pendingSnakeLadder = null;
-                window.GAME_FUNCTIONS.saveState();
-                
                 // Check if final square after snake/ladder
                 if (playerPosition === totalSquares) {
+                    // STATE: Ready for final challenge
+                    window.GAME_STATE.gamePhase = 'awaiting_final_challenge';
+                    window.GAME_STATE.pendingSnakeLadder = null;
+                    window.GAME_FUNCTIONS.saveState();
+                    
                     window.showPage('task');
                     window.displayFinalChallenge();
                     return;
                 }
                 
+                // STATE: Waiting to show normal task at destination
+                window.GAME_STATE.gamePhase = 'awaiting_normal_task';
+                window.GAME_STATE.pendingSnakeLadder = null;
+                window.GAME_FUNCTIONS.saveState();
+                
                 // Stay on board, show Continue button for the destination square task
                 rollDiceButton.textContent = '➡️ Continue';
                 rollDiceButton.disabled = false;
-                rollDiceButton.onclick = null; // Clear first
+                rollDiceButton.onclick = null;
                 
                 // Second continue: show the normal task at destination square
                 rollDiceButton.onclick = () => {
                     window.showPage('task');
                     window.displayRandomInstructionWithAddRemove(savedPending.addRemoveTask);
                 };
-                
-                // CRITICAL: Save state after setting up for next task
-                window.GAME_FUNCTIONS.saveState();
             }, true);
         };
-        
-        // CRITICAL: Save state after setting up continue button
-        window.GAME_FUNCTIONS.saveState();
     } else {
-        // No snake/ladder, go back to board for next roll
+        // Completed normal task, ready for next roll
+        // STATE: Ready for dice roll
+        window.GAME_STATE.gamePhase = 'awaiting_dice_roll';
+        window.GAME_STATE.pendingSnakeLadder = null;
+        window.GAME_STATE.pendingAddRemoveTask = null;
+        window.GAME_FUNCTIONS.saveState();
+        
         window.showPage('board');
         const rollDiceButton = document.getElementById('rollDice');
         rollDiceButton.textContent = '🎲 Roll Dice';
         rollDiceButton.disabled = false;
-        
-        // Clear onclick first to prevent issues
         rollDiceButton.onclick = null;
         rollDiceButton.onclick = rollDice;
-        
-        // CRITICAL: Save state before next roll
-        window.GAME_FUNCTIONS.saveState();
     }
 }
 
@@ -278,5 +291,6 @@ export function resetPlayerState() {
     isRolling = false;
     currentSquare = 0;
     window.GAME_STATE.pendingSnakeLadder = null;
+    window.GAME_STATE.gamePhase = 'awaiting_dice_roll';
     player.remove();
 }
