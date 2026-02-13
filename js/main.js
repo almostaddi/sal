@@ -66,17 +66,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load saved game state
     const savedState = loadGameState();
     
-    // Determine which page to show
+    // Determine which page to show based on game phase
     let initialPage = 'home'; // Default
     if (savedState && savedState.gameStarted) {
+        const phase = savedState.gamePhase || 'awaiting_dice_roll';
+        
         if (savedState.currentInstruction && savedState.currentInstruction.trim() !== '') {
+            // Currently showing a task
             initialPage = 'task';
+        } else if (phase === 'awaiting_dice_roll' || 
+                   phase === 'awaiting_normal_task' || 
+                   phase === 'awaiting_snake_ladder_task' ||
+                   phase === 'awaiting_snake_ladder_movement') {
+            // On board, waiting for some action
+            initialPage = 'board';
         } else {
+            // Default to board if game started
             initialPage = 'board';
         }
     }
     
-    console.log('📄 Initial page:', initialPage);
+    console.log('📄 Initial page:', initialPage, '| Phase:', savedState?.gamePhase);
     
     // Show the correct page immediately
     showPage(initialPage);
@@ -195,6 +205,7 @@ function startGame() {
     
     window.GAME_STATE.playerName = playerName;
     window.GAME_STATE.gameStarted = true;
+    window.GAME_STATE.gamePhase = 'awaiting_dice_roll';
     
     // Get board size
     const boardSize = parseInt(document.getElementById('boardSizeSelect').value);
@@ -245,6 +256,7 @@ function updateBoardSize() {
 // Restore saved game
 function restoreSavedGame(state) {
     console.log('💾 Restoring saved game...', state);
+    console.log('📍 Game phase:', state.gamePhase);
     
     // Restore UI state
     restoreUIState(state);
@@ -261,12 +273,12 @@ function restoreSavedGame(state) {
         document.getElementById('turnCounter').textContent = `Turn: ${state.turnCount}`;
         document.getElementById('diceResult').textContent = state.diceResultText || 'Dice: -';
         
-        // Set up roll dice button handler
         const rollDiceButton = document.getElementById('rollDice');
+        const phase = state.gamePhase || 'awaiting_dice_roll';
         
-        // Determine which page to show and set up appropriate handlers
+        // Restore based on game phase
         if (state.currentInstruction && state.currentInstruction.trim() !== '') {
-            // Was on task page - restore the instruction and continue button
+            // Was viewing a task - restore it
             const instructions = document.getElementById('instructions');
             instructions.innerHTML = state.currentInstruction;
             instructions.classList.add('active');
@@ -280,34 +292,55 @@ function restoreSavedGame(state) {
                     }
                 };
             }
-        } else if (state.pendingSnakeLadder) {
-            // Was on board with pending snake/ladder
+        } else if (phase === 'awaiting_snake_ladder_task') {
+            // Waiting to show snake/ladder task
             rollDiceButton.textContent = '➡️ Continue';
             rollDiceButton.disabled = false;
             
-            // Highlight destination square
-            const finalPosition = state.pendingSnakeLadder.to;
-            const destSquare = document.getElementById(`square-${finalPosition}`);
-            if (destSquare) {
-                destSquare.classList.add(
-                    state.pendingSnakeLadder.type === 'snake' ? 'snake-destination' : 'ladder-destination'
-                );
-            }
-            
-            // Set up continue handler
-            rollDiceButton.onclick = () => {
+            // Highlight destination
+            if (state.pendingSnakeLadder) {
+                const destSquare = document.getElementById(`square-${state.pendingSnakeLadder.to}`);
                 if (destSquare) {
-                    destSquare.classList.remove('snake-destination', 'ladder-destination');
+                    destSquare.classList.add(
+                        state.pendingSnakeLadder.type === 'snake' ? 'snake-destination' : 'ladder-destination'
+                    );
                 }
+                
+                rollDiceButton.onclick = () => {
+                    if (destSquare) {
+                        destSquare.classList.remove('snake-destination', 'ladder-destination');
+                    }
+                    showPage('task');
+                    window.displaySnakeLadderTask(
+                        state.pendingSnakeLadder.type,
+                        state.pendingSnakeLadder.from,
+                        state.pendingSnakeLadder.to
+                    );
+                };
+            }
+        } else if (phase === 'awaiting_snake_ladder_movement') {
+            // Waiting to move piece after snake/ladder task
+            rollDiceButton.textContent = '➡️ Continue';
+            rollDiceButton.disabled = false;
+            
+            if (state.pendingSnakeLadder) {
+                rollDiceButton.onclick = () => {
+                    // This will trigger the movement animation
+                    if (window.GAME_FUNCTIONS && window.GAME_FUNCTIONS.completeTask) {
+                        window.GAME_FUNCTIONS.completeTask();
+                    }
+                };
+            }
+        } else if (phase === 'awaiting_normal_task') {
+            // Waiting to show normal task
+            rollDiceButton.textContent = '➡️ Continue';
+            rollDiceButton.disabled = false;
+            rollDiceButton.onclick = () => {
                 showPage('task');
-                window.displaySnakeLadderTask(
-                    state.pendingSnakeLadder.type,
-                    state.pendingSnakeLadder.from,
-                    state.pendingSnakeLadder.to
-                );
+                window.displayRandomInstructionWithAddRemove(state.pendingAddRemoveTask);
             };
         } else {
-            // Was on board waiting for roll
+            // awaiting_dice_roll or default
             rollDiceButton.textContent = '🎲 Roll Dice';
             rollDiceButton.disabled = false;
             rollDiceButton.onclick = rollDice;
