@@ -44,6 +44,7 @@ body {
     padding: 20px;
     background: var(--primary-gradient);
     color: var(--text-primary);
+    overflow-x: hidden;
 }
 
 /* Main heading */
@@ -54,6 +55,8 @@ h1 {
     color: var(--button-text);
     text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
     animation: float 3s ease-in-out infinite;
+    position: relative;
+    z-index: 100;
 }
 
 @keyframes float {
@@ -150,6 +153,17 @@ a:hover {
 }
 
 .page.active {
+    display: block;
+}
+
+/* Board page specific - remove default flex layout */
+#boardPage {
+    display: none;
+    width: 100%;
+    padding-top: 120px; /* More space for title to prevent overlap */
+}
+
+#boardPage.active {
     display: block;
 }
 
@@ -353,5 +367,16 @@ a:hover {
     
     .close-btn {
         font-size: 24px;
+    }
+    
+    #boardPage {
+        padding-top: 60px;
+    }
+}
+
+/* Extra padding for larger boards */
+@media (min-width: 601px) {
+    #boardPage {
+        padding-top: 150px; /* Extra space for 100-square boards */
     }
 }
