@@ -16,10 +16,10 @@
     
     <!-- HOME PAGE - Settings and Start Game -->
     <div id="homePage" class="page">
-        <div>
-            <button id="resetBtn">🔄 Reset Settings</button>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 30px;">
+            <button id="homeResetBtn">🔄 Reset Settings</button>
             <button id="startButton">🎮 Start Game</button>
-            <button id="patchNotesBtn">📋 Notes</button>
+            <button id="homePatchNotesBtn">📋 Notes</button>
         </div>
         <div id="buttoncontainer">
             <div class="settings-column-left">
@@ -243,6 +243,10 @@
         <div id="instructions"></div>
     </div>
     
+    <!-- Fixed position buttons for board/task pages -->
+    <button id="resetBtn">🔄 Reset</button>
+    <button id="patchNotesBtn">📋 Notes</button>
+    
     <div id="patchNotesModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -264,5 +268,16 @@
     
     <!-- JavaScript Modules -->
     <script type="module" src="js/main.js"></script>
+    <script>
+        // Wire up home page buttons to the actual buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('homeResetBtn').addEventListener('click', () => {
+                document.getElementById('resetBtn').click();
+            });
+            document.getElementById('homePatchNotesBtn').addEventListener('click', () => {
+                document.getElementById('patchNotesBtn').click();
+            });
+        });
+    </script>
 </body>
 </html>
