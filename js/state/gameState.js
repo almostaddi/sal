@@ -6,6 +6,7 @@ import { getClothesPegMax } from '../data/instructionSets.js';
 export function initializeState() {
     window.GAME_STATE = {
         gameStarted: false,
+        gamePhase: 'awaiting_dice_roll',
         playerPosition: 0,
         turnCount: 0,
         turnCountBySet: {},
