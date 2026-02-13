@@ -1,6 +1,6 @@
 // Main entry point - orchestrates the game
 
-// Imports
+// State management
 import { 
     initializeState, 
     initializeGameFunctions,
@@ -8,28 +8,67 @@ import {
     loadGameState, 
     resetGameState 
 } from './state/gameState.js';
+
+// Board components
 import { BoardRenderer } from './board/boardRenderer.js';
 import { 
     rollDice, 
     onTaskComplete, 
     setPlayerPosition,
-    getPlayerPosition,
     resetPlayerState,
-    setPendingSnakeLadder,
-    getPendingSnakeLadder
+    setPendingSnakeLadder
 } from './board/playerMovement.js';
+
+// Task system
+import { loadTaskRegistry } from './tasks/taskSelector.js';
+import { 
+    loadAndDisplayTask,
+    loadAndDisplaySnakeLadderTask,
+    loadAndDisplayFinalChallenge
+} from './tasks/taskLoader.js';
+
+// UI components
+import { initializeUI, restoreUIState } from './ui.js';
+
+// Data
+import { INSTRUCTION_SETS } from './data/instructionSets.js';
 
 // Game components
 let boardRenderer;
+let taskRegistryLoaded = false;
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🎲 Snakes and Ladders - Initializing...');
+    
+    // Initialize state
     initializeState();
     initializeGameFunctions(onTaskComplete);
+    
+    // Initialize board
     boardRenderer = new BoardRenderer(100);
     boardRenderer.create();
+    
+    // Initialize UI
+    initializeUI();
+    
+    // Load task registry
+    console.log('📦 Loading task registry...');
+    const registry = await loadTaskRegistry();
+    if (registry) {
+        taskRegistryLoaded = true;
+        console.log('✅ Task registry loaded');
+    } else {
+        console.warn('⚠️ Failed to load task registry - using fallback tasks');
+    }
+    
+    // Setup event listeners
     setupEventListeners();
+    
+    // Restore saved game if exists
     restoreSavedGame();
+    
+    console.log('✅ Game Initialized');
 });
 
 // Set up event listeners
@@ -42,6 +81,12 @@ function setupEventListeners() {
     
     // Board size selector
     document.getElementById('boardSizeSelect').addEventListener('change', updateBoardSize);
+    
+    // Player name input
+    document.getElementById('playerNameInput').addEventListener('input', function() {
+        window.GAME_STATE.playerName = this.value;
+        saveGameState();
+    });
     
     // Reset button
     document.getElementById('resetBtn').addEventListener('click', () => {
@@ -97,10 +142,32 @@ export function showPage(pageName) {
 
 // Start game
 function startGame() {
+    // Validate instruction sets
+    const selectedSets = window.GAME_STATE.selectedSets;
+    if (selectedSets.length === 0) {
+        alert('⚠️ Please select at least one instruction set before starting!');
+        return;
+    }
+    
+    // Validate toys
+    const hasToys = Object.values(window.GAME_STATE.toyQuantities).some(qty => qty > 0);
+    const hasCheckedToys = Object.values(window.GAME_STATE.toyChecked).some(checked => checked);
+    
+    if (!hasToys || !hasCheckedToys) {
+        alert('⚠️ Please select at least one toy before starting!');
+        return;
+    }
+    
     // Validate player name
     const playerName = document.getElementById('playerNameInput').value.trim();
     if (!playerName) {
         alert('⚠️ Please enter your name before starting!');
+        return;
+    }
+    
+    // Validate task registry
+    if (!taskRegistryLoaded) {
+        alert('⚠️ Task system is still loading. Please wait a moment and try again.');
         return;
     }
     
@@ -111,6 +178,11 @@ function startGame() {
     const boardSize = parseInt(document.getElementById('boardSizeSelect').value);
     window.GAME_STATE.totalSquares = boardSize;
     boardRenderer.updateSize(boardSize);
+    
+    // Handle cage "start worn" option
+    if (window.GAME_STATE.cageWorn && window.GAME_STATE.toyChecked['cage']) {
+        window.addToyToBodyPart('Pe', 'cage');
+    }
     
     // Create board with selected size
     boardRenderer.create();
@@ -125,6 +197,8 @@ function startGame() {
     
     // Save state
     saveGameState();
+    
+    console.log('🎮 Game Started!');
 }
 
 // Update board size
@@ -141,13 +215,18 @@ function updateBoardSize() {
 // Restore saved game
 function restoreSavedGame() {
     const state = loadGameState();
-    if (!state) return;
+    if (!state) {
+        console.log('No saved game found');
+        return;
+    }
     
-    // If game was in progress, restore UI
+    console.log('💾 Restoring saved game...');
+    
+    // Restore UI state
+    restoreUIState(state);
+    
+    // If game was in progress, restore board
     if (state.gameStarted) {
-        document.getElementById('playerNameInput').value = state.playerName;
-        document.getElementById('boardSizeSelect').value = state.totalSquares;
-        
         boardRenderer.updateSize(state.totalSquares);
         boardRenderer.create();
         
@@ -163,30 +242,73 @@ function restoreSavedGame() {
         document.getElementById('turnCounter').textContent = `Turn: ${state.turnCount}`;
         document.getElementById('diceResult').textContent = state.diceResultText || 'Dice: -';
         
-        // Show board page
-        showPage('board');
+        // Show appropriate page
+        if (state.currentInstruction && state.currentInstruction.trim() !== '') {
+            showPage('task');
+            const instructions = document.getElementById('instructions');
+            instructions.innerHTML = state.currentInstruction;
+            instructions.classList.add('active');
+        } else {
+            showPage('board');
+        }
+        
+        console.log('✅ Game restored');
     }
 }
 
 // Reset game
 function resetGame() {
+    console.log('🔄 Resetting game...');
+    
     resetGameState();
     resetPlayerState();
     
     // Reset UI
     document.getElementById('playerNameInput').value = '';
+    document.getElementById('boardSizeSelect').value = '100';
     document.getElementById('turnCounter').textContent = 'Turn: 0';
     document.getElementById('diceResult').textContent = 'Dice: -';
     document.getElementById('testJumpInput').value = '';
+    
+    // Clear instructions
+    const instructions = document.getElementById('instructions');
+    instructions.classList.remove('active');
+    instructions.innerHTML = '';
+    
+    // Reset checkboxes
+    document.querySelectorAll('#instructionSetCheckboxes input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+    
+    // Re-initialize UI
+    initializeUI();
     
     // Close modal
     document.getElementById('resetModal').classList.remove('active');
     
     // Show home page
     showPage('home');
+    
+    console.log('✅ Game reset complete');
 }
 
 // Expose showPage globally for other modules
 window.showPage = showPage;
 
-console.log('🎲 Snakes and Ladders - Game Initialized');
+// Expose task display functions globally for compatibility
+window.displayRandomInstruction = async () => {
+    const task = window.selectNextTask();
+    if (task) {
+        await loadAndDisplayTask(task);
+    }
+};
+
+window.displayRandomInstructionWithAddRemove = async (addRemoveTask) => {
+    const task = window.selectNextTask();
+    if (task) {
+        await loadAndDisplayTask(task, addRemoveTask);
+    }
+};
+
+window.displaySnakeLadderTask = loadAndDisplaySnakeLadderTask;
+window.displayFinalChallenge = loadAndDisplayFinalChallenge;
