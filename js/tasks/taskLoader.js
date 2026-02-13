@@ -1,6 +1,7 @@
 // Task loader - loads and renders task HTML/logic from task modules
 
 import { getTaskConditions } from '../state/gameState.js';
+import { saveGameState } from '../state/gameState.js';
 
 // Current active task
 let currentTask = null;
@@ -109,6 +110,9 @@ export async function loadAndDisplayTask(taskDefinition, addRemoveTask = null) {
         }
     };
     
+    // Save current instruction HTML to state for restoration
+    window.GAME_STATE.currentInstruction = instructions.innerHTML;
+    
     // Save state
     if (window.GAME_FUNCTIONS && window.GAME_FUNCTIONS.saveState) {
         window.GAME_FUNCTIONS.saveState();
@@ -156,6 +160,9 @@ export async function loadAndDisplaySnakeLadderTask(type, fromPos, toPos) {
         }
     };
     
+    // Save current instruction HTML to state for restoration
+    window.GAME_STATE.currentInstruction = instructions.innerHTML;
+    
     // Save state
     if (window.GAME_FUNCTIONS && window.GAME_FUNCTIONS.saveState) {
         window.GAME_FUNCTIONS.saveState();
@@ -199,6 +206,9 @@ export async function loadAndDisplayFinalChallenge() {
     
     // Note: Continue button is NOT added for final challenge
     // The task itself handles prize reveal
+    
+    // Save current instruction HTML to state for restoration
+    window.GAME_STATE.currentInstruction = instructions.innerHTML;
     
     // Save state
     if (window.GAME_FUNCTIONS && window.GAME_FUNCTIONS.saveState) {
