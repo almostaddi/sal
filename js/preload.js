@@ -1,7 +1,8 @@
-// Pre-load script - runs immediately to prevent page flash
-// Works with inline critical CSS that hides all pages by default
+// Pre-load script - determines which page to show on load
 
 (function() {
+    console.log('🎯 Preload script running...');
+    
     // Try to load saved state immediately
     const saved = localStorage.getItem('snakesLaddersGameState');
     
@@ -27,39 +28,54 @@
     // Store the target page so main.js can use it
     window.__INITIAL_PAGE__ = targetPage;
     
-    console.log('🎯 Preload determined page:', targetPage);
+    console.log('📄 Target page determined:', targetPage);
     
     // Function to show the correct page
     function showInitialPage() {
-        console.log('🎯 Preload showing page:', targetPage);
+        console.log('🎯 Showing page:', targetPage);
         
-        // Hide all pages first
-        const allPages = ['homePage', 'boardPage', 'taskPage'];
-        allPages.forEach(pageId => {
-            const page = document.getElementById(pageId);
-            if (page) {
-                page.style.display = 'none';
-                page.classList.remove('active');
-            }
-        });
+        // Get all page elements
+        const homePage = document.getElementById('homePage');
+        const boardPage = document.getElementById('boardPage');
+        const taskPage = document.getElementById('taskPage');
+        
+        // Hide all pages
+        if (homePage) {
+            homePage.classList.remove('active');
+            homePage.style.display = 'none';
+        }
+        if (boardPage) {
+            boardPage.classList.remove('active');
+            boardPage.style.display = 'none';
+        }
+        if (taskPage) {
+            taskPage.classList.remove('active');
+            taskPage.style.display = 'none';
+        }
         
         // Show target page
-        const targetPageElement = document.getElementById(targetPage + 'Page');
-        if (targetPageElement) {
-            targetPageElement.style.display = 'block';
-            targetPageElement.classList.add('active');
-            console.log('✅ Page shown:', targetPage);
+        let targetElement = null;
+        if (targetPage === 'home' && homePage) {
+            targetElement = homePage;
+        } else if (targetPage === 'board' && boardPage) {
+            targetElement = boardPage;
+        } else if (targetPage === 'task' && taskPage) {
+            targetElement = taskPage;
+        }
+        
+        if (targetElement) {
+            targetElement.style.display = 'block';
+            targetElement.classList.add('active');
+            console.log('✅ Page shown successfully:', targetPage);
         } else {
-            console.error('❌ Target page not found:', targetPage + 'Page');
+            console.error('❌ Could not find page element:', targetPage + 'Page');
         }
     }
     
-    // Try to show immediately if DOM is ready
+    // Wait for DOM to be ready
     if (document.readyState === 'loading') {
-        // DOM not ready yet, wait for it
-        document.addEventListener('DOMContentLoaded', showInitialPage, { once: true });
+        document.addEventListener('DOMContentLoaded', showInitialPage);
     } else {
-        // DOM already loaded, show immediately
         showInitialPage();
     }
 })();
