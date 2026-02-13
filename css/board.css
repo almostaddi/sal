@@ -6,6 +6,9 @@
     box-shadow: none;
     max-width: none;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Board */
@@ -218,17 +221,53 @@
     border-radius: 5px;
 }
 
-/* Snake/Ladder destination highlights */
+/* Snake/Ladder destination highlights - prevent movement */
 .square.snake-destination {
     animation: pulseRed 1.5s ease-in-out infinite;
-    box-shadow: 0 0 25px rgba(255, 107, 107, 0.9);
     z-index: 10;
 }
 
 .square.ladder-destination {
     animation: pulseGreen 1.5s ease-in-out infinite;
-    box-shadow: 0 0 25px rgba(81, 207, 102, 0.9);
     z-index: 10;
+}
+
+/* Preserve transform for shifted squares when animating */
+.square-shift-1.snake-destination,
+.square-shift-1.ladder-destination {
+    animation: pulseRedShift1 1.5s ease-in-out infinite;
+}
+.square-shift-2.snake-destination,
+.square-shift-2.ladder-destination {
+    animation: pulseRedShift2 1.5s ease-in-out infinite;
+}
+.square-shift-3.snake-destination,
+.square-shift-3.ladder-destination {
+    animation: pulseRedShift3 1.5s ease-in-out infinite;
+}
+.square-shift-4.snake-destination,
+.square-shift-4.ladder-destination {
+    animation: pulseRedShift4 1.5s ease-in-out infinite;
+}
+.square-shift-5.snake-destination,
+.square-shift-5.ladder-destination {
+    animation: pulseRedShift5 1.5s ease-in-out infinite;
+}
+.square-shift-6.snake-destination,
+.square-shift-6.ladder-destination {
+    animation: pulseRedShift6 1.5s ease-in-out infinite;
+}
+.square-shift-7.snake-destination,
+.square-shift-7.ladder-destination {
+    animation: pulseRedShift7 1.5s ease-in-out infinite;
+}
+.square-shift-8.snake-destination,
+.square-shift-8.ladder-destination {
+    animation: pulseRedShift8 1.5s ease-in-out infinite;
+}
+.square-shift-9.snake-destination,
+.square-shift-9.ladder-destination {
+    animation: pulseRedShift9 1.5s ease-in-out infinite;
 }
 
 @keyframes pulseRed {
@@ -255,6 +294,60 @@
         border: 3px solid #2fb344;
         transform: scale(1.1);
     }
+}
+
+/* Animations that preserve shift transforms */
+@keyframes pulseRedShift1 {
+    0%, 100% {
+        box-shadow: 0 0 25px rgba(255, 107, 107, 0.9);
+        border: 3px solid #ff6b6b;
+        transform: translateY(-9px) scale(1.05);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255, 107, 107, 1);
+        border: 3px solid #ff3838;
+        transform: translateY(-9px) scale(1.1);
+    }
+}
+
+@keyframes pulseRedShift2 {
+    0%, 100% { transform: translateY(-18px) scale(1.05); box-shadow: 0 0 25px rgba(255, 107, 107, 0.9); border: 3px solid #ff6b6b; }
+    50% { transform: translateY(-18px) scale(1.1); box-shadow: 0 0 40px rgba(255, 107, 107, 1); border: 3px solid #ff3838; }
+}
+
+@keyframes pulseRedShift3 {
+    0%, 100% { transform: translateY(-27px) scale(1.05); box-shadow: 0 0 25px rgba(255, 107, 107, 0.9); border: 3px solid #ff6b6b; }
+    50% { transform: translateY(-27px) scale(1.1); box-shadow: 0 0 40px rgba(255, 107, 107, 1); border: 3px solid #ff3838; }
+}
+
+@keyframes pulseRedShift4 {
+    0%, 100% { transform: translateY(-36px) scale(1.05); box-shadow: 0 0 25px rgba(255, 107, 107, 0.9); border: 3px solid #ff6b6b; }
+    50% { transform: translateY(-36px) scale(1.1); box-shadow: 0 0 40px rgba(255, 107, 107, 1); border: 3px solid #ff3838; }
+}
+
+@keyframes pulseRedShift5 {
+    0%, 100% { transform: translateY(-45px) scale(1.05); box-shadow: 0 0 25px rgba(255, 107, 107, 0.9); border: 3px solid #ff6b6b; }
+    50% { transform: translateY(-45px) scale(1.1); box-shadow: 0 0 40px rgba(255, 107, 107, 1); border: 3px solid #ff3838; }
+}
+
+@keyframes pulseRedShift6 {
+    0%, 100% { transform: translateY(-54px) scale(1.05); box-shadow: 0 0 25px rgba(255, 107, 107, 0.9); border: 3px solid #ff6b6b; }
+    50% { transform: translateY(-54px) scale(1.1); box-shadow: 0 0 40px rgba(255, 107, 107, 1); border: 3px solid #ff3838; }
+}
+
+@keyframes pulseRedShift7 {
+    0%, 100% { transform: translateY(-63px) scale(1.05); box-shadow: 0 0 25px rgba(255, 107, 107, 0.9); border: 3px solid #ff6b6b; }
+    50% { transform: translateY(-63px) scale(1.1); box-shadow: 0 0 40px rgba(255, 107, 107, 1); border: 3px solid #ff3838; }
+}
+
+@keyframes pulseRedShift8 {
+    0%, 100% { transform: translateY(-72px) scale(1.05); box-shadow: 0 0 25px rgba(255, 107, 107, 0.9); border: 3px solid #ff6b6b; }
+    50% { transform: translateY(-72px) scale(1.1); box-shadow: 0 0 40px rgba(255, 107, 107, 1); border: 3px solid #ff3838; }
+}
+
+@keyframes pulseRedShift9 {
+    0%, 100% { transform: translateY(-81px) scale(1.05); box-shadow: 0 0 25px rgba(255, 107, 107, 0.9); border: 3px solid #ff6b6b; }
+    50% { transform: translateY(-81px) scale(1.1); box-shadow: 0 0 40px rgba(255, 107, 107, 1); border: 3px solid #ff3838; }
 }
 
 /* Player piece */
