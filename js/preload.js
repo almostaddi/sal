@@ -27,15 +27,39 @@
     // Store the target page so main.js can use it
     window.__INITIAL_PAGE__ = targetPage;
     
-    // When DOM is ready, immediately show the correct page
-    document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 Preload determined page:', targetPage);
+    
+    // Function to show the correct page
+    function showInitialPage() {
         console.log('🎯 Preload showing page:', targetPage);
         
-        // Remove the critical CSS inline styles and apply normal visibility
+        // Hide all pages first
+        const allPages = ['homePage', 'boardPage', 'taskPage'];
+        allPages.forEach(pageId => {
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.style.display = 'none';
+                page.classList.remove('active');
+            }
+        });
+        
+        // Show target page
         const targetPageElement = document.getElementById(targetPage + 'Page');
         if (targetPageElement) {
             targetPageElement.style.display = 'block';
             targetPageElement.classList.add('active');
+            console.log('✅ Page shown:', targetPage);
+        } else {
+            console.error('❌ Target page not found:', targetPage + 'Page');
         }
-    }, { once: true, capture: true }); // Run as early as possible
+    }
+    
+    // Try to show immediately if DOM is ready
+    if (document.readyState === 'loading') {
+        // DOM not ready yet, wait for it
+        document.addEventListener('DOMContentLoaded', showInitialPage, { once: true });
+    } else {
+        // DOM already loaded, show immediately
+        showInitialPage();
+    }
 })();
