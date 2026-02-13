@@ -69,6 +69,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup event listeners
     setupEventListeners();
     
+    // Show the correct initial page
+    const initialPage = window.__INITIAL_PAGE__ || 'home';
+    console.log('🎯 Showing initial page:', initialPage);
+    showPage(initialPage);
+    
     // Restore saved game if exists
     if (savedState) {
         restoreSavedGame(savedState);
