@@ -160,7 +160,7 @@ a:hover {
 #boardPage {
     display: none;
     width: 100%;
-    padding-top: 120px; /* More space for title to prevent overlap */
+    padding-top: 70px; /* More space for title to prevent overlap */
 }
 
 #boardPage.active {
