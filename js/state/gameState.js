@@ -63,6 +63,7 @@ export function initializeState() {
             pf: false
         },
         totalSquares: 100,
+        currentInstruction: '', // Save current task HTML for restoration
         
         // Task selection control
         forceNextTask: null,
@@ -153,6 +154,7 @@ export function resetGameState() {
     window.GAME_STATE.customFlags = {};
     window.GAME_STATE.cageLocked = false;
     window.GAME_STATE.cageWorn = false;
+    window.GAME_STATE.currentInstruction = '';
     
     // Reset body part state
     window.GAME_STATE.bodyPartState = {
