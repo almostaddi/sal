@@ -20,7 +20,7 @@ h1 {
     margin: 0 auto;
 }
 
-/* Button row with reset, start, and notes */
+/* Button row on home page - horizontal layout */
 #homePage > div:first-child {
     text-align: center;
     margin-bottom: 30px;
@@ -35,15 +35,6 @@ h1 {
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
-}
-
-/* Reset and Notes buttons on home page */
-#homePage #resetBtn,
-#homePage #patchNotesBtn {
-    position: static;
-    padding: 20px 40px;
-    font-size: 18px;
-    font-weight: 600;
 }
 
 /* Button container - two column layout */
@@ -606,12 +597,6 @@ input[type="range"]::-moz-range-thumb {
     #startButton {
         padding: 15px 30px;
         font-size: 18px;
-    }
-    
-    #homePage #resetBtn,
-    #homePage #patchNotesBtn {
-        padding: 12px 24px;
-        font-size: 16px;
     }
     
     .settings-column-left,
