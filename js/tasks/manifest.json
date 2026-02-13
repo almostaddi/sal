@@ -1,0 +1,24 @@
+{
+    "dressup": [
+        "tasks/dressup/fallback.js"
+    ],
+    "apple": [
+        "tasks/apple/fallback.js"
+    ],
+    "digging": [
+        "tasks/digging/fallback.js"
+    ],
+    "teaseanddenial": [
+        "tasks/teaseanddenial/fallback.js"
+    ],
+    "snakeandladders": [
+        "tasks/snakeandladders/snake_fallback.js",
+        "tasks/snakeandladders/ladder_fallback.js"
+    ],
+    "final": [
+        "tasks/final/fallback.js"
+    ],
+    "_shared": [
+        "tasks/shared/general_fallback.js"
+    ]
+}
