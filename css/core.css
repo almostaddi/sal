@@ -209,12 +209,6 @@ a:hover {
     letter-spacing: normal;
 }
 
-/* Hide fixed buttons when on home page */
-#homePage.active ~ #resetBtn,
-#homePage.active ~ #patchNotesBtn {
-    display: none;
-}
-
 #patchNotesBtn {
     right: 20px;
     background: var(--primary-gradient);
