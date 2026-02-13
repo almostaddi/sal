@@ -11,41 +11,57 @@ export async function loadTaskRegistry() {
         
         taskRegistry = {
             sets: {
-                dressup: { tasks: {} },
-                apple: { tasks: {} },
-                digging: { tasks: {} },
-                teaseanddenial: { tasks: {} }
+                dressup: { tasks: {}, snakes: [], ladders: [], finals: [] },
+                apple: { tasks: {}, snakes: [], ladders: [], finals: [] },
+                digging: { tasks: {}, snakes: [], ladders: [], finals: [] },
+                teaseanddenial: { tasks: {}, snakes: [], ladders: [], finals: [] }
             },
-            snakes: [],
-            ladders: [],
-            final: [],
-            shared: []
+            fallbacks: {
+                snake: null,
+                ladder: null,
+                final: null,
+                general: null
+            }
         };
         
         // Load each task file from manifest
-        for (const [setId, taskFiles] of Object.entries(manifest)) {
+        for (const [category, taskFiles] of Object.entries(manifest)) {
             for (const filePath of taskFiles) {
                 const taskDef = await loadTaskDefinition(filePath);
                 
                 if (!taskDef) continue;
                 
-                // Categorize by type
-                if (taskDef.type === 'snake') {
-                    taskRegistry.snakes.push({ ...taskDef, filePath });
-                } else if (taskDef.type === 'ladder') {
-                    taskRegistry.ladders.push({ ...taskDef, filePath });
-                } else if (setId === 'final') {
-                    taskRegistry.final.push({ ...taskDef, filePath });
-                } else if (setId === '_shared') {
-                    taskRegistry.shared.push({ ...taskDef, filePath });
-                } else {
-                    // Regular set task
-                    const toyId = taskDef.toyId;
-                    if (!taskRegistry.sets[setId].tasks[toyId]) {
-                        taskRegistry.sets[setId].tasks[toyId] = [];
+                // Handle fallbacks
+                if (category === '_fallbacks') {
+                    if (taskDef.type === 'snake-fallback') {
+                        taskRegistry.fallbacks.snake = { ...taskDef, filePath };
+                    } else if (taskDef.type === 'ladder-fallback') {
+                        taskRegistry.fallbacks.ladder = { ...taskDef, filePath };
+                    } else if (taskDef.type === 'final-fallback') {
+                        taskRegistry.fallbacks.final = { ...taskDef, filePath };
+                    } else if (taskDef.type === 'general-fallback') {
+                        taskRegistry.fallbacks.general = { ...taskDef, filePath };
                     }
-                    taskRegistry.sets[setId].tasks[toyId].push({ ...taskDef, filePath });
                 }
+                // Handle set-specific tasks
+                else if (taskRegistry.sets[category]) {
+                    if (taskDef.type === 'snake') {
+                        taskRegistry.sets[category].snakes.push({ ...taskDef, filePath });
+                    } else if (taskDef.type === 'ladder') {
+                        taskRegistry.sets[category].ladders.push({ ...taskDef, filePath });
+                    } else if (taskDef.type === 'final') {
+                        taskRegistry.sets[category].finals.push({ ...taskDef, filePath });
+                    } else {
+                        // Regular set task
+                        const toyId = taskDef.toyId;
+                        if (!taskRegistry.sets[category].tasks[toyId]) {
+                            taskRegistry.sets[category].tasks[toyId] = [];
+                        }
+                        taskRegistry.sets[category].tasks[toyId].push({ ...taskDef, filePath });
+                    }
+                }
+                
+                console.log(`✅ Loaded: ${filePath}`);
             }
         }
         
@@ -60,12 +76,11 @@ export async function loadTaskRegistry() {
 // Load task definition from JS module file
 async function loadTaskDefinition(filePath) {
     try {
-        // Import the module directly
-        const module = await import(`../../${filePath}`);
+        const module = await import(`/${filePath}`);
         return module.default;
     } catch (error) {
-        console.error(`Failed to load task from ${filePath}:`, error);
-        return null;
+        // Don't log errors - files might not exist
+        throw error;
     }
 }
 
@@ -167,7 +182,7 @@ export function selectNextTask() {
     
     // 8. If no tasks available, use general fallback
     if (weighted.length === 0) {
-        return getGeneralFallback();
+        return taskRegistry.fallbacks.general;
     }
     
     // 9. Random weighted selection
@@ -184,38 +199,54 @@ export function selectSnakeLadderTask(type, fromPos, toPos) {
         distance: toPos - fromPos
     };
     
-    // Get all tasks of this type
-    const allTasks = type === 'snake' ? taskRegistry.snakes : taskRegistry.ladders;
+    const selectedSets = window.GAME_STATE.selectedSets;
+    const allTasks = [];
+    
+    // Collect set-specific snake/ladder tasks from selected sets
+    for (const setId of selectedSets) {
+        if (!taskRegistry.sets[setId]) continue;
+        
+        const setTasks = type === 'snake' ? 
+            taskRegistry.sets[setId].snakes : 
+            taskRegistry.sets[setId].ladders;
+        
+        allTasks.push(...setTasks);
+    }
     
     // Filter by conditions
     const availableTasks = allTasks.filter(task => {
-        if (task.isFallback) return true;
         if (task.canSelect && !task.canSelect(conditions)) return false;
         return true;
     });
     
-    // Prioritize: set-specific > type-specific fallback > general fallback
-    const setSpecific = availableTasks.filter(t => !t.isFallback && t.setId);
-    const typeFallback = availableTasks.filter(t => t.isFallback && t.type === type);
-    
-    let taskToUse;
-    if (setSpecific.length > 0) {
-        taskToUse = setSpecific[Math.floor(Math.random() * setSpecific.length)];
-    } else if (typeFallback.length > 0) {
-        taskToUse = typeFallback[0];
-    } else {
-        taskToUse = getGeneralFallback();
+    // If set-specific tasks available, pick one
+    if (availableTasks.length > 0) {
+        const taskToUse = availableTasks[Math.floor(Math.random() * availableTasks.length)];
+        return { task: taskToUse, snakeLadderInfo };
     }
     
-    return { task: taskToUse, snakeLadderInfo };
+    // Otherwise use fallback
+    const fallbackTask = type === 'snake' ? 
+        taskRegistry.fallbacks.snake : 
+        taskRegistry.fallbacks.ladder;
+    
+    return { task: fallbackTask, snakeLadderInfo };
 }
 
 // Select final challenge task
 export function selectFinalChallenge() {
     const conditions = getTaskConditions();
+    const selectedSets = window.GAME_STATE.selectedSets;
+    
+    // Collect all set-specific final challenges
+    const allFinalTasks = [];
+    for (const setId of selectedSets) {
+        if (!taskRegistry.sets[setId]) continue;
+        allFinalTasks.push(...taskRegistry.sets[setId].finals);
+    }
     
     // Check for "always" final challenges
-    const alwaysTasks = taskRegistry.final.filter(t => 
+    const alwaysTasks = allFinalTasks.filter(t => 
         t.alwaysSelect && t.alwaysSelect(conditions)
     );
     
@@ -223,39 +254,24 @@ export function selectFinalChallenge() {
         return alwaysTasks[Math.floor(Math.random() * alwaysTasks.length)];
     }
     
-    // Weighted selection based on probabilities
-    const roll = Math.random() * 100;
-    let targetTaskId = null;
+    // Filter by canSelect and weight
+    const availableTasks = allFinalTasks.filter(task => {
+        if (task.canSelect && !task.canSelect(conditions)) return false;
+        return true;
+    });
     
-    const settings = window.GAME_STATE.finalChallengeSettings;
-    
-    if (roll < settings.stroking) {
-        targetTaskId = 'stroking';
-    } else if (roll < settings.stroking + settings.vibe) {
-        targetTaskId = 'vibe';
-    } else {
-        targetTaskId = 'anal';
+    // Weighted selection if tasks available
+    if (availableTasks.length > 0) {
+        const weighted = availableTasks.map(task => ({
+            task,
+            weight: task.weight || 1
+        }));
+        
+        return weightedRandomSelect(weighted);
     }
     
-    // Find task with matching ID
-    let selectedTask = taskRegistry.final.find(t => t.id === targetTaskId);
-    
-    // If not found or doesn't pass canSelect, use fallback
-    if (!selectedTask || (selectedTask.canSelect && !selectedTask.canSelect(conditions))) {
-        selectedTask = taskRegistry.final.find(t => t.id === 'fallback');
-    }
-    
-    // If STILL nothing, use general fallback
-    if (!selectedTask) {
-        return getGeneralFallback();
-    }
-    
-    return selectedTask;
-}
-
-// Get general fallback task
-function getGeneralFallback() {
-    return taskRegistry.shared.find(t => t.type === 'general-fallback');
+    // Use fallback
+    return taskRegistry.fallbacks.final;
 }
 
 // Load task by file path
