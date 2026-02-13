@@ -35,8 +35,6 @@ export function animatePlayer(start, end, callback, instant = false) {
 
 // Roll dice
 export function rollDice() {
-    console.trace('rollDice was called by:'); 
-    
     if (isRolling) {
         console.log('Already rolling, ignoring click');
         return;
@@ -112,6 +110,9 @@ export function rollDice() {
         rollDiceButton.disabled = false;
         isRolling = false;
         
+        // Clear onclick first to prevent double-firing
+        rollDiceButton.onclick = null;
+        
         // Set up what happens when user clicks Continue
         if (isSnake || isLadder) {
             // Snake/Ladder: Highlight the destination square
@@ -162,9 +163,14 @@ export function onTaskComplete() {
         rollDiceButton.textContent = '➡️ Continue';
         rollDiceButton.disabled = false;
         
+        // Remove existing onclick to prevent double-firing
+        rollDiceButton.onclick = null;
+        
         // First continue: animate the piece movement
         rollDiceButton.onclick = () => {
             rollDiceButton.disabled = true;
+            rollDiceButton.onclick = null; // Clear again
+            
             animatePlayer(savedPending.from, savedPending.to, () => {
                 playerPosition = savedPending.to;
                 currentSquare = savedPending.to;
@@ -185,6 +191,7 @@ export function onTaskComplete() {
                 // Stay on board, show Continue button for the destination square task
                 rollDiceButton.textContent = '➡️ Continue';
                 rollDiceButton.disabled = false;
+                rollDiceButton.onclick = null; // Clear first
                 pendingSnakeLadder = null; // Clear pending since we've moved
                 
                 // Second continue: show the normal task at destination square
@@ -200,6 +207,9 @@ export function onTaskComplete() {
         const rollDiceButton = document.getElementById('rollDice');
         rollDiceButton.textContent = '🎲 Roll Dice';
         rollDiceButton.disabled = false;
+        
+        // Clear onclick first to prevent issues
+        rollDiceButton.onclick = null;
         rollDiceButton.onclick = rollDice;
     }
 }
