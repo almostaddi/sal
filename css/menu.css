@@ -606,6 +606,18 @@ input[type="range"]::-moz-range-thumb {
     font-size: 14px;
 }
 
+/* Hide fixed position buttons by default (shown by core.css when not on home page) */
+#resetBtn,
+#patchNotesBtn {
+    display: none;
+}
+
+/* Show fixed buttons when home page is NOT active */
+body:not(.on-home-page) #resetBtn,
+body:not(.on-home-page) #patchNotesBtn {
+    display: block;
+}
+
 /* Mobile responsive */
 @media (max-width: 600px) {
     h1 {
