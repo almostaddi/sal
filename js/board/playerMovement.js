@@ -155,6 +155,9 @@ export function onTaskComplete() {
     
     if (currentMetronomeTask && !currentMetronomeTask.isComplete()) return;
     
+    // Clear current instruction when returning to board
+    window.GAME_STATE.currentInstruction = '';
+    
     // If there's a pending snake/ladder, go back to board to move piece
     if (pendingSnakeLadder) {
         const savedPending = pendingSnakeLadder;
@@ -212,6 +215,9 @@ export function onTaskComplete() {
         rollDiceButton.onclick = null;
         rollDiceButton.onclick = rollDice;
     }
+    
+    // Save state after clearing instruction
+    window.GAME_FUNCTIONS.saveState();
 }
 
 // Get current player position
