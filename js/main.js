@@ -59,9 +59,11 @@ function showPage(pageName) {
     const resetBtn = document.getElementById('resetBtn');
     if (pageName === 'home') {
         document.body.classList.add('on-home-page');
+        document.body.classList.remove('show-fixed-buttons');
         resetBtn.textContent = '🔄 Reset Settings';
     } else {
         document.body.classList.remove('on-home-page');
+        document.body.classList.add('show-fixed-buttons');
         resetBtn.textContent = '🔄 Reset';
     }
 }
