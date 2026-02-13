@@ -1,20 +1,20 @@
 {
     "dressup": [
-        "tasks/dressup/fallback.js"
+        "js/tasks/dressup/fallback.js"
     ],
     "apple": [
-        "tasks/apple/fallback.js"
+        "js/tasks/apple/fallback.js"
     ],
     "digging": [
-        "tasks/digging/fallback.js"
+        "js/tasks/digging/fallback.js"
     ],
     "teaseanddenial": [
-        "tasks/teaseanddenial/fallback.js"
+        "js/tasks/teaseanddenial/fallback.js"
     ],
     "_fallbacks": [
-        "tasks/fallbacks/snake_fallback.js",
-        "tasks/fallbacks/ladder_fallback.js",
-        "tasks/fallbacks/final_fallback.js",
-        "tasks/fallbacks/general_fallback.js"
+        "js/tasks/fallbacks/snake_fallback.js",
+        "js/tasks/fallbacks/ladder_fallback.js",
+        "js/tasks/fallbacks/final_fallback.js",
+        "js/tasks/fallbacks/general_fallback.js"
     ]
 }
