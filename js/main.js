@@ -69,10 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup event listeners
     setupEventListeners();
     
-    // Show the correct initial page
-    const initialPage = window.__INITIAL_PAGE__ || 'home';
-    console.log('🎯 Showing initial page:', initialPage);
-    showPage(initialPage);
+    // NOTE: preload.js already showed the correct page
+    // We only need to restore game state, not call showPage again
     
     // Restore saved game if exists
     if (savedState) {
@@ -139,6 +137,8 @@ function setupEventListeners() {
 
 // Show/hide pages
 export function showPage(pageName) {
+    console.log('🔄 Switching to page:', pageName);
+    
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
         page.style.display = 'none';
@@ -148,6 +148,9 @@ export function showPage(pageName) {
     if (targetPage) {
         targetPage.style.display = 'block';
         targetPage.classList.add('active');
+        console.log('✅ Now showing:', pageName);
+    } else {
+        console.error('❌ Page not found:', pageName + 'Page');
     }
 }
 
