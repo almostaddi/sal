@@ -160,7 +160,7 @@ a:hover {
 #boardPage {
     display: none;
     width: 100%;
-    padding-top: 70px; /* More space for title to prevent overlap */
+    padding-top: 80px; /* More space for title to prevent overlap */
 }
 
 #boardPage.active {
@@ -374,9 +374,4 @@ a:hover {
     }
 }
 
-/* Extra padding for larger boards */
-@media (min-width: 601px) {
-    #boardPage {
-        padding-top: 150px; /* Extra space for 100-square boards */
-    }
 }
