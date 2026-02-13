@@ -1,50 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- CRITICAL: Inline style to prevent flash - must be FIRST -->
-    <style>
-        /* Hide all pages until JavaScript shows the correct one */
-        .page {
-            display: none !important;
-        }
-    </style>
-    
-    <!-- Preload script - runs immediately to show correct page -->
-    <script>
-        // Inline preload to minimize flash
-        (function() {
-            const saved = localStorage.getItem('snakesLaddersGameState');
-            let targetPage = 'home';
-            
-            if (saved) {
-                try {
-                    const state = JSON.parse(saved);
-                    if (state.gameStarted) {
-                        targetPage = (state.currentInstruction && state.currentInstruction.trim() !== '') ? 'task' : 'board';
-                    }
-                } catch (e) {}
-            }
-            
-            window.__INITIAL_PAGE__ = targetPage;
-            
-            // Show page as soon as DOM is ready
-            function showPage() {
-                const targetEl = document.getElementById(targetPage + 'Page');
-                if (targetEl) {
-                    // Use inline style to override !important
-                    targetEl.style.setProperty('display', 'block', 'important');
-                    targetEl.classList.add('active');
-                }
-            }
-            
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', showPage);
-            } else {
-                showPage();
-            }
-        })();
-    </script>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snakes and Ladders</title>
