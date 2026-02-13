@@ -2,7 +2,6 @@
 
 let playerPosition = 0;
 let isRolling = false;
-let pendingSnakeLadder = null;
 let currentSquare = 0;
 
 // Create player piece
@@ -63,7 +62,9 @@ export function rollDice() {
         // Jump mode
         window.GAME_STATE.turnCount++;
         diceRoll = jumpValue - playerPosition;
-        diceResult.textContent = `Jump to: ${jumpValue} 🎯`;
+        const resultText = `Jump to: ${jumpValue} 🎯`;
+        diceResult.textContent = resultText;
+        window.GAME_STATE.diceResultText = resultText;
         turnCounter.textContent = `Turn: ${window.GAME_STATE.turnCount}`;
         nextPosition = jumpValue;
         testJumpInput.value = '';
@@ -71,7 +72,9 @@ export function rollDice() {
         // Normal dice roll
         window.GAME_STATE.turnCount++;
         diceRoll = Math.floor(Math.random() * 6) + 1;
-        diceResult.textContent = `Dice: ${diceRoll} 🎲`;
+        const resultText = `Dice: ${diceRoll} 🎲`;
+        diceResult.textContent = resultText;
+        window.GAME_STATE.diceResultText = resultText;
         turnCounter.textContent = `Turn: ${window.GAME_STATE.turnCount}`;
         nextPosition = playerPosition + diceRoll;
         if (nextPosition > totalSquares) nextPosition = totalSquares;
@@ -122,12 +125,16 @@ export function rollDice() {
                 destSquare.classList.add(isSnake ? 'snake-destination' : 'ladder-destination');
             }
             
-            pendingSnakeLadder = {
+            const pendingSnakeLadder = {
                 type: isSnake ? 'snake' : 'ladder',
                 from: nextPosition,
                 to: finalPosition,
                 addRemoveTask: addRemoveTask
             };
+            
+            // Save pending snake/ladder to state
+            window.GAME_STATE.pendingSnakeLadder = pendingSnakeLadder;
+            window.GAME_FUNCTIONS.saveState();
             
             rollDiceButton.onclick = () => {
                 // Remove highlight when continuing
@@ -139,7 +146,8 @@ export function rollDice() {
             };
         } else {
             // Normal square: Continue goes to normal task
-            pendingSnakeLadder = null;
+            window.GAME_STATE.pendingSnakeLadder = null;
+            window.GAME_FUNCTIONS.saveState();
             
             rollDiceButton.onclick = () => {
                 window.showPage('task');
@@ -159,8 +167,8 @@ export function onTaskComplete() {
     window.GAME_STATE.currentInstruction = '';
     
     // If there's a pending snake/ladder, go back to board to move piece
-    if (pendingSnakeLadder) {
-        const savedPending = pendingSnakeLadder;
+    if (window.GAME_STATE.pendingSnakeLadder) {
+        const savedPending = window.GAME_STATE.pendingSnakeLadder;
         window.showPage('board');
         const rollDiceButton = document.getElementById('rollDice');
         rollDiceButton.textContent = '➡️ Continue';
@@ -179,13 +187,12 @@ export function onTaskComplete() {
                 currentSquare = savedPending.to;
                 window.GAME_STATE.playerPosition = playerPosition;
                 
-                window.GAME_FUNCTIONS.saveState();
-                
                 const totalSquares = window.GAME_STATE.totalSquares || 100;
                 
                 // Check if final square after snake/ladder
                 if (playerPosition === totalSquares) {
-                    pendingSnakeLadder = null;
+                    window.GAME_STATE.pendingSnakeLadder = null;
+                    window.GAME_FUNCTIONS.saveState();
                     window.showPage('task');
                     window.displayFinalChallenge();
                     return;
@@ -195,7 +202,10 @@ export function onTaskComplete() {
                 rollDiceButton.textContent = '➡️ Continue';
                 rollDiceButton.disabled = false;
                 rollDiceButton.onclick = null; // Clear first
-                pendingSnakeLadder = null; // Clear pending since we've moved
+                
+                // Clear pending since we've moved
+                window.GAME_STATE.pendingSnakeLadder = null;
+                window.GAME_FUNCTIONS.saveState();
                 
                 // Second continue: show the normal task at destination square
                 rollDiceButton.onclick = () => {
@@ -239,17 +249,17 @@ export function setPlayerPosition(position) {
 
 // Get pending snake/ladder
 export function getPendingSnakeLadder() {
-    return pendingSnakeLadder;
+    return window.GAME_STATE.pendingSnakeLadder;
 }
 
 // Set pending snake/ladder (for loading saved games)
 export function setPendingSnakeLadder(pending) {
-    pendingSnakeLadder = pending;
+    window.GAME_STATE.pendingSnakeLadder = pending;
 }
 
 // Clear pending snake/ladder
 export function clearPendingSnakeLadder() {
-    pendingSnakeLadder = null;
+    window.GAME_STATE.pendingSnakeLadder = null;
 }
 
 // Get player element
@@ -261,7 +271,7 @@ export function getPlayerElement() {
 export function resetPlayerState() {
     playerPosition = 0;
     isRolling = false;
-    pendingSnakeLadder = null;
     currentSquare = 0;
+    window.GAME_STATE.pendingSnakeLadder = null;
     player.remove();
 }
