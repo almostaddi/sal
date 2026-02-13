@@ -11,7 +11,7 @@
     "teaseanddenial": [
         "tasks/teaseanddenial/fallback.js"
     ],
-    "_fallbacks": [
+    "fallbacks": [
         "tasks/fallbacks/snake_fallback.js",
         "tasks/fallbacks/ladder_fallback.js",
         "tasks/fallbacks/final_fallback.js",
