@@ -1,21 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- CRITICAL: This inline style MUST be FIRST -->
-    <style>
-        /* Hide all pages until JavaScript determines which to show */
-        #homePage, #boardPage, #taskPage {
-            display: none !important;
-        }
-    </style>
-    
-    <!-- Preload script -->
-    <script src="js/preload.js"></script>
-    
-    <!-- Meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snakes and Ladders</title>
+    
+    <!-- Preload script FIRST - determines which page to show -->
+    <script src="js/preload.js"></script>
     
     <!-- CSS Modules -->
     <link rel="stylesheet" href="css/core.css">
