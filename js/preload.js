@@ -1,5 +1,5 @@
 // Pre-load script - runs immediately to prevent page flash
-// This must be placed in the <head> before any body content loads
+// Works with inline critical CSS that hides all pages by default
 
 (function() {
     // Try to load saved state immediately
@@ -29,14 +29,9 @@
     
     // When DOM is ready, immediately show the correct page
     document.addEventListener('DOMContentLoaded', function() {
-        // Hide all pages first
-        const pages = document.querySelectorAll('.page');
-        pages.forEach(page => {
-            page.style.display = 'none';
-            page.classList.remove('active');
-        });
+        console.log('🎯 Preload showing page:', targetPage);
         
-        // Show the correct page immediately
+        // Remove the critical CSS inline styles and apply normal visibility
         const targetPageElement = document.getElementById(targetPage + 'Page');
         if (targetPageElement) {
             targetPageElement.style.display = 'block';
