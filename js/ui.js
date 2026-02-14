@@ -216,10 +216,15 @@ function updateFinalChallengeDisplays() {
 
 // Render toy library
 export function renderToyLibrary() {
+    console.log('🎨 renderToyLibrary() called');
+    console.trace('Call stack:');
+    
     updateSelectedSets();
     
     const container = document.getElementById('toyLibraryContainer');
     if (!container) return;
+    
+    console.log('Container children before clear:', container.children.length);
     
     // Clear existing content except the probability display
     const probabilityDisplay = container.querySelector('div:first-child');
@@ -227,6 +232,8 @@ export function renderToyLibrary() {
     if (probabilityDisplay) {
         container.appendChild(probabilityDisplay);
     }
+    
+    console.log('Container children after clear:', container.children.length);
     
     // Get toys from instruction sets (will be imported from data/instructionSets.js)
     const instructionSets = window.INSTRUCTION_SETS || {};
@@ -330,7 +337,9 @@ export function renderToyLibrary() {
     }
     
     // Render each toy
+    console.log('About to render toys:', Object.keys(allToys));
     for (const [toyId, toyData] of Object.entries(allToys)) {
+        console.log(`Rendering toy: ${toyId}`, toyData);
         const toyItem = createToyLibraryItem(toyId, toyData);
         container.appendChild(toyItem);
     }
