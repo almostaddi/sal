@@ -578,36 +578,12 @@ input[type="range"]::-moz-range-thumb {
     margin: 0;
 }
 
-/* Modifiers section */
-.settings-section > div > div:last-child {
-    margin-top: 15px;
-    padding-top: 0;
-}
+/* Modifiers section - NOTE: These rules should NOT apply to toy library! */
+/* Using a more specific selector path to target only final challenge modifiers */
+/* Target only the modifiers that are in the Final Challenges section specifically */
 
-.settings-section > div > div:last-child > div:first-child {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 8px;
-}
-
-.settings-section > div > div:last-child > div:last-child {
-    margin-left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.settings-section > div > div:last-child label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    margin: 0;
-    padding: 0;
-    background: transparent;
-}
-
-.settings-section > div > div:last-child input[type="checkbox"] {
+/* Set checkbox styling - applies to set difficulty checkboxes */
+.set-difficulty input[type="checkbox"] {
     width: 16px;
     height: 16px;
     cursor: pointer;
@@ -615,9 +591,8 @@ input[type="range"]::-moz-range-thumb {
     margin: 0;
 }
 
-.settings-section > div > div:last-child span {
-    color: #495057;
-    font-size: 14px;
+.set-difficulty input[type="checkbox"]:disabled {
+    opacity: 0.5;
 }
 
 /* Mobile responsive */
