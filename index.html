@@ -23,39 +23,50 @@
         </div>
         <div id="buttoncontainer">
             <div class="settings-column-left">
-                <label>👤 Player Name:</label>
-                <input type="text" id="playerNameInput" placeholder="Enter your name">
-                
-                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    🎯 Board Size: 
-                    <input type="number" id="boardSizeSelect" min="10" step="10" value="100" style="width: 120px; margin: 0;">
-                </label>
-                
-                <label>📦 Select Instruction Sets:</label>
-                <div id="instructionSetCheckboxes" class="instruction-set-selector">
-                    <label><input type="checkbox" value="apple"> Anal Set 🍑</label>
-                    <label><input type="checkbox" value="digging"> Deepthroat 🍌</label>
-                    <label><input type="checkbox" value="dressup"> Painplay😖</label>
-                    <label><input type="checkbox" value="teaseanddenial"> Tease And Denial 😉</label>
+                <!-- Player Info Section -->
+                <div class="settings-section">
+                    <h3>👤 Player Info</h3>
+                    <label>Player Name:</label>
+                    <input type="text" id="playerNameInput" placeholder="Enter your name">
                 </div>
+                
+                <!-- Board Customization Section -->
+                <div class="settings-section">
+                    <h3>🎯 Board Customization</h3>
+                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        Board Size: 
+                        <input type="number" id="boardSizeSelect" min="10" step="10" value="100" style="width: 120px; margin: 0;">
+                    </label>
+                </div>
+                
+                <!-- Instruction Sets & Toys Section -->
+                <div class="settings-section">
+                    <h3>🎮 Instruction Sets & Toys</h3>
+                    <label>Select Instruction Sets:</label>
+                    <div id="instructionSetCheckboxes" class="instruction-set-selector">
+                        <label><input type="checkbox" value="apple"> Anal Set 🍑</label>
+                        <label><input type="checkbox" value="digging"> Deepthroat 🍌</label>
+                        <label><input type="checkbox" value="dressup"> Painplay😖</label>
+                        <label><input type="checkbox" value="teaseanddenial"> Tease And Denial 😉</label>
+                    </div>
 
-                <label>🎮 Select Toys:</label>
-                <div>
+                    <label>Select Toys:</label>
                     <div>
-                        <div>📊 Continuous Task Probability:</div>
                         <div>
-                            <span>➕ Add: <span id="totalAddProbability">0%</span></span>
-                            <span>➖ Remove: <span id="totalRemoveProbability">0%</span></span>
+                            <div>📊 Continuous Task Probability:</div>
+                            <div>
+                                <span>➕ Add: <span id="totalAddProbability">0%</span></span>
+                                <span>➖ Remove: <span id="totalRemoveProbability">0%</span></span>
+                            </div>
                         </div>
                     </div>
+                    <div id="toyLibraryContainer"></div>
                 </div>
-                <div id="toyLibraryContainer"></div>
             </div>
             
             <div class="settings-column-right">
                 <!-- Final Challenges Section -->
-                <label>🏆 Final Challenges:</label>
-                <div class="prize-settings">
+                <div class="settings-section">
                     <h3>🏆 Final Challenges</h3>
                     <p>Set probabilities for each final challenge type. These are separate from the main game toys.</p>
                     
@@ -192,8 +203,8 @@
                     </div>
                 </div>
                 
-                <label>🎁 Prize Probabilities:</label>
-                <div class="prize-settings">
+                <!-- Prize Probabilities Section -->
+                <div class="settings-section">
                     <h3>🎁 Prize Probabilities</h3>
                     <div class="slider-container">
                         <div class="slider-label"><span>🏆 Full:</span><span class="percentage" id="fullPercent">33%</span></div>
