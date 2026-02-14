@@ -241,27 +241,13 @@ export function renderToyLibrary() {
     
     const allToys = {};
     
-    // ALWAYS show cage toy first (even with no sets selected)
-    allToys['cage'] = {
-        id: 'cage',
-        name: 'Cage 🔒',
-        sets: [],
-        alwaysVisible: true
-    };
-    
-    // Collect toys from selected sets
+    // Collect toys from selected sets FIRST
     selectedSets.forEach(setId => {
         if (instructionSets[setId]) {
             instructionSets[setId].toys.forEach(toy => {
                 if (toy.id === 'cage') {
-                    // Add this set to the existing cage toy (don't create a new one)
-                    if (!allToys['cage'].sets.some(s => s.setId === setId)) {
-                        allToys['cage'].sets.push({
-                            setId,
-                            setName: instructionSets[setId].name,
-                            emoji: setEmojis[setId] || ''
-                        });
-                    }
+                    // Skip cage - we'll handle it separately
+                    return;
                 } else {
                     // Regular toy - create if doesn't exist
                     if (!allToys[toy.id]) {
@@ -283,6 +269,33 @@ export function renderToyLibrary() {
             });
         }
     });
+    
+    // NOW create the cage toy with sets from selected instruction sets
+    const cageSets = [];
+    selectedSets.forEach(setId => {
+        if (instructionSets[setId]) {
+            // Check if this set has cage
+            const hasCage = instructionSets[setId].toys.some(toy => toy.id === 'cage');
+            if (hasCage) {
+                cageSets.push({
+                    setId,
+                    setName: instructionSets[setId].name,
+                    emoji: setEmojis[setId] || ''
+                });
+            }
+        }
+    });
+    
+    // Create a single cage toy at the beginning with all its sets
+    const cageToy = {
+        id: 'cage',
+        name: 'Cage 🔒',
+        sets: cageSets,
+        alwaysVisible: true
+    };
+    
+    // Put cage first in allToys
+    allToys = { cage: cageToy, ...allToys };
     
     // Initialize toy state
     for (const [toyId, toyData] of Object.entries(allToys)) {
