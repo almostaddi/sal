@@ -226,11 +226,19 @@ export function renderToyLibrary() {
     
     console.log('Container children before clear:', container.children.length);
     
-    // Clear existing content except the probability display
+    // Save the probability display if it exists
     const probabilityDisplay = container.querySelector('div:first-child');
-    container.innerHTML = '';
+    let probabilityHTML = null;
     if (probabilityDisplay) {
-        container.appendChild(probabilityDisplay);
+        probabilityHTML = probabilityDisplay.outerHTML;
+    }
+    
+    // Completely clear the container
+    container.innerHTML = '';
+    
+    // Re-add probability display if it existed
+    if (probabilityHTML) {
+        container.insertAdjacentHTML('afterbegin', probabilityHTML);
     }
     
     console.log('Container children after clear:', container.children.length);
