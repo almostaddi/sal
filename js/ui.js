@@ -242,15 +242,17 @@ export function renderToyLibrary() {
     
     console.log('Container children before clear:', container.children.length);
     
-    // Save the probability display if it exists
+    // Save the probability display if it exists (check for the actual probability elements)
     const probabilityDisplay = container.querySelector('div:first-child');
     let probabilityHTML = null;
-    if (probabilityDisplay) {
+    if (probabilityDisplay && probabilityDisplay.querySelector('#totalAddProbability')) {
         probabilityHTML = probabilityDisplay.outerHTML;
     }
     
-    // Completely clear the container
-    container.innerHTML = '';
+    // Completely clear the container - remove all child nodes properly
+    while (container.firstChild) {
+        container.removeChild(container.firstChild);
+    }
     
     // Re-add probability display if it existed
     if (probabilityHTML) {
@@ -494,7 +496,8 @@ function createToyControls(toyId, toyData) {
         toyKeys.forEach(key => {
             window.GAME_STATE.toyQuantities[key] = newQty;
         });
-        renderToyLibrary();
+        // DON'T call renderToyLibrary here - just update the value and save
+        this.value = newQty;
         saveGameState();
     });
     controls.appendChild(qtyInput);
