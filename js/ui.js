@@ -373,7 +373,22 @@ function createToyLibraryItem(toyId, toyData) {
     checkbox.checked = window.GAME_STATE.toyChecked[toyId];
     checkbox.addEventListener('change', () => {
         window.GAME_STATE.toyChecked[toyId] = checkbox.checked;
-        updateToyEnabledStates(toyId, toyData);
+        
+        // If unchecking, reset all set-related values for this toy
+        if (!checkbox.checked) {
+            toyData.sets.forEach(setInfo => {
+                const toyKey = `${setInfo.setId}_${toyId}`;
+                // Uncheck the set
+                window.GAME_STATE.toySetEnabled[toyKey] = false;
+                // Reset add/remove chances to 0
+                if (window.GAME_STATE.toyModifiers[toyKey]) {
+                    window.GAME_STATE.toyModifiers[toyKey].addChance = 0;
+                    window.GAME_STATE.toyModifiers[toyKey].removeChance = 0;
+                }
+            });
+        }
+        
+        updateToyEnabledStates(toyId, toyData, item);
         updateContinuousTaskProbabilities();
         saveGameState();
     });
@@ -412,12 +427,14 @@ function createCageControls(toyId, toyData) {
     // Worn checkbox
     const wornLabel = document.createElement('label');
     wornLabel.style.cssText = 'display: flex; align-items: center; gap: 8px; cursor: pointer;';
+    wornLabel.className = 'cage-worn-label';
     
     const wornCheckbox = document.createElement('input');
     wornCheckbox.type = 'checkbox';
     wornCheckbox.checked = window.GAME_STATE.cageWorn;
     wornCheckbox.disabled = !window.GAME_STATE.toyChecked[toyId];
     wornCheckbox.style.cssText = 'width: 18px; height: 18px; cursor: pointer; accent-color: #667eea;';
+    wornCheckbox.className = 'cage-worn-checkbox';
     
     const wornText = document.createElement('span');
     wornText.textContent = '👕 Start Worn';
@@ -430,12 +447,14 @@ function createCageControls(toyId, toyData) {
     // Locked checkbox
     const lockedLabel = document.createElement('label');
     lockedLabel.style.cssText = 'display: flex; align-items: center; gap: 8px; cursor: pointer;';
+    lockedLabel.className = 'cage-locked-label';
     
     const lockedCheckbox = document.createElement('input');
     lockedCheckbox.type = 'checkbox';
     lockedCheckbox.checked = window.GAME_STATE.cageLocked;
     lockedCheckbox.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.cageWorn;
     lockedCheckbox.style.cssText = 'width: 18px; height: 18px; cursor: pointer; accent-color: #667eea;';
+    lockedCheckbox.className = 'cage-locked-checkbox';
     
     const lockedText = document.createElement('span');
     lockedText.textContent = '🔒 Locked';
@@ -491,6 +510,7 @@ function createToyControls(toyId, toyData) {
     qtyInput.min = '1';
     qtyInput.value = toyQuantity;
     qtyInput.disabled = !window.GAME_STATE.toyChecked[toyId];
+    qtyInput.className = 'toy-quantity-input';
     qtyInput.addEventListener('change', function() {
         const newQty = Math.max(1, parseInt(this.value) || 1);
         toyKeys.forEach(key => {
@@ -528,9 +548,10 @@ function createSetDifficultySection(toyId, toyData) {
         setCheckbox.checked = window.GAME_STATE.toySetEnabled[toyKey];
         setCheckbox.disabled = !window.GAME_STATE.toyChecked[toyId];
         setCheckbox.style.cssText = 'width:16px;height:16px;cursor:pointer;accent-color:#667eea;';
+        setCheckbox.className = `set-checkbox-${toyKey}`;
         setCheckbox.addEventListener('change', function() {
             window.GAME_STATE.toySetEnabled[toyKey] = this.checked;
-            updateToySetControls(toyKey, toyId);
+            updateToySetControls(toyKey, toyId, setItem);
             updateContinuousTaskProbabilities();
             saveGameState();
         });
@@ -547,6 +568,7 @@ function createSetDifficultySection(toyId, toyData) {
         
         const diffSelect = document.createElement('select');
         diffSelect.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey];
+        diffSelect.className = `difficulty-select-${toyKey}`;
         ['easy', 'medium', 'hard'].forEach(level => {
             const opt = document.createElement('option');
             opt.value = level;
@@ -558,7 +580,7 @@ function createSetDifficultySection(toyId, toyData) {
         });
         diffSelect.addEventListener('change', function() {
             window.GAME_STATE.toyDifficulties[toyKey] = this.value;
-            applyPreset(toyKey, this.value);
+            applyPreset(toyKey, this.value, setItem);
             saveGameState();
         });
         diffControls.appendChild(diffSelect);
@@ -605,6 +627,7 @@ function createSetDifficultySection(toyId, toyData) {
             addInput.max = '100';
             addInput.value = (toyId === 'cage' && window.GAME_STATE.cageLocked) ? 0 : (window.GAME_STATE.toyModifiers[toyKey]?.addChance ?? 10);
             addInput.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey] || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+            addInput.className = `add-input-${toyKey}`;
             addInput.addEventListener('input', function(e) {
                 const val = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
                 e.target.value = val;
@@ -628,6 +651,7 @@ function createSetDifficultySection(toyId, toyData) {
             removeInput.max = '100';
             removeInput.value = (toyId === 'cage' && window.GAME_STATE.cageLocked) ? 0 : (window.GAME_STATE.toyModifiers[toyKey]?.removeChance ?? 20);
             removeInput.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey] || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+            removeInput.className = `remove-input-${toyKey}`;
             removeInput.addEventListener('input', function(e) {
                 const val = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
                 e.target.value = val;
@@ -652,33 +676,119 @@ function createSetDifficultySection(toyId, toyData) {
 }
 
 // Update toy enabled states when toy checkbox changes
-function updateToyEnabledStates(toyId, toyData) {
+function updateToyEnabledStates(toyId, toyData, itemElement) {
+    const isChecked = window.GAME_STATE.toyChecked[toyId];
+    
+    // Update cage-specific controls if this is the cage
+    if (toyId === 'cage') {
+        const wornCheckbox = itemElement.querySelector('.cage-worn-checkbox');
+        const lockedCheckbox = itemElement.querySelector('.cage-locked-checkbox');
+        
+        if (wornCheckbox) {
+            wornCheckbox.disabled = !isChecked;
+            wornCheckbox.style.opacity = isChecked ? '1' : '0.5';
+        }
+        
+        if (lockedCheckbox) {
+            lockedCheckbox.disabled = !isChecked || !window.GAME_STATE.cageWorn;
+            lockedCheckbox.style.opacity = (isChecked && window.GAME_STATE.cageWorn) ? '1' : '0.5';
+        }
+    } else {
+        // Update quantity input for regular toys
+        const qtyInput = itemElement.querySelector('.toy-quantity-input');
+        if (qtyInput) {
+            qtyInput.disabled = !isChecked;
+            qtyInput.style.opacity = isChecked ? '1' : '0.5';
+        }
+    }
+    
+    // Update all set-specific controls
     toyData.sets.forEach(setInfo => {
         const toyKey = `${setInfo.setId}_${toyId}`;
-        const isChecked = window.GAME_STATE.toyChecked[toyId];
         
-        // Update all related controls
-        const setCheckbox = document.querySelector(`input[type="checkbox"][data-toy-key="${toyKey}"]`);
-        if (setCheckbox) setCheckbox.disabled = !isChecked;
+        // Update set checkbox
+        const setCheckbox = itemElement.querySelector(`.set-checkbox-${toyKey}`);
+        if (setCheckbox) {
+            setCheckbox.disabled = !isChecked;
+            setCheckbox.style.opacity = isChecked ? '1' : '0.5';
+        }
         
-        const diffSelect = document.getElementById(`difficulty_${toyKey}`);
-        if (diffSelect) diffSelect.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey];
+        // Update difficulty select
+        const diffSelect = itemElement.querySelector(`.difficulty-select-${toyKey}`);
+        if (diffSelect) {
+            diffSelect.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey];
+            diffSelect.style.opacity = (isChecked && window.GAME_STATE.toySetEnabled[toyKey]) ? '1' : '0.5';
+        }
+        
+        // Update gear button
+        const gearBtn = itemElement.querySelector('.gear-btn');
+        if (gearBtn) {
+            const isWearable = window.isToyWearable ? window.isToyWearable(toyId) : false;
+            gearBtn.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey] || !isWearable;
+            gearBtn.style.opacity = (isChecked && window.GAME_STATE.toySetEnabled[toyKey] && isWearable) ? '1' : '0.5';
+        }
+        
+        // Update add/remove inputs
+        const addInput = itemElement.querySelector(`.add-input-${toyKey}`);
+        const removeInput = itemElement.querySelector(`.remove-input-${toyKey}`);
+        
+        if (addInput) {
+            addInput.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey] || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+            addInput.style.opacity = (isChecked && window.GAME_STATE.toySetEnabled[toyKey] && !(toyId === 'cage' && window.GAME_STATE.cageLocked)) ? '1' : '0.5';
+            // If unchecking toy, set value to 0
+            if (!isChecked) {
+                addInput.value = 0;
+            }
+        }
+        
+        if (removeInput) {
+            removeInput.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey] || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+            removeInput.style.opacity = (isChecked && window.GAME_STATE.toySetEnabled[toyKey] && !(toyId === 'cage' && window.GAME_STATE.cageLocked)) ? '1' : '0.5';
+            // If unchecking toy, set value to 0
+            if (!isChecked) {
+                removeInput.value = 0;
+            }
+        }
     });
 }
 
 // Update toy set controls when set checkbox changes
-function updateToySetControls(toyKey, toyId) {
+function updateToySetControls(toyKey, toyId, setItemElement) {
     const isEnabled = window.GAME_STATE.toySetEnabled[toyKey];
     const isChecked = window.GAME_STATE.toyChecked[toyId];
     
-    const diffSelect = document.getElementById(`difficulty_${toyKey}`);
+    // Update difficulty select
+    const diffSelect = setItemElement.querySelector(`.difficulty-select-${toyKey}`);
     if (diffSelect) {
         diffSelect.disabled = !isChecked || !isEnabled;
+        diffSelect.style.opacity = (isChecked && isEnabled) ? '1' : '0.5';
+    }
+    
+    // Update gear button
+    const gearBtn = setItemElement.querySelector('.gear-btn');
+    if (gearBtn) {
+        const isWearable = window.isToyWearable ? window.isToyWearable(toyId) : false;
+        gearBtn.disabled = !isChecked || !isEnabled || !isWearable;
+        gearBtn.style.opacity = (isChecked && isEnabled && isWearable) ? '1' : '0.5';
+    }
+    
+    // Update add/remove inputs
+    const addInput = setItemElement.querySelector(`.add-input-${toyKey}`);
+    const removeInput = setItemElement.querySelector(`.remove-input-${toyKey}`);
+    
+    if (addInput) {
+        addInput.disabled = !isChecked || !isEnabled || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+        addInput.style.opacity = (isChecked && isEnabled && !(toyId === 'cage' && window.GAME_STATE.cageLocked)) ? '1' : '0.5';
+    }
+    
+    if (removeInput) {
+        removeInput.disabled = !isChecked || !isEnabled || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+        removeInput.style.opacity = (isChecked && isEnabled && !(toyId === 'cage' && window.GAME_STATE.cageLocked)) ? '1' : '0.5';
     }
 }
 
 // Apply difficulty preset to toy modifiers
-function applyPreset(toyKey, difficulty) {
+function applyPreset(toyKey, difficulty, setItemElement) {
     const presets = {
         easy: { addChance: 5, removeChance: 25 },
         medium: { addChance: 10, removeChance: 20 },
@@ -698,6 +808,19 @@ function applyPreset(toyKey, difficulty) {
         
         window.GAME_STATE.toyModifiers[toyKey] = { ...presets[difficulty] };
         window.GAME_STATE.toyDifficulties[toyKey] = difficulty;
+        
+        // Update the input values in the UI if advanced settings are visible
+        if (setItemElement) {
+            const addInput = setItemElement.querySelector(`.add-input-${toyKey}`);
+            const removeInput = setItemElement.querySelector(`.remove-input-${toyKey}`);
+            
+            if (addInput) {
+                addInput.value = presets[difficulty].addChance;
+            }
+            if (removeInput) {
+                removeInput.value = presets[difficulty].removeChance;
+            }
+        }
         
         updateContinuousTaskProbabilities();
         saveGameState();
