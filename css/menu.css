@@ -101,6 +101,7 @@ label {
 }
 
 input[type="text"],
+input[type="number"],
 select {
     width: 100%;
     padding: 12px;
@@ -113,6 +114,11 @@ select {
 
 select {
     cursor: pointer;
+}
+
+/* Board size input specific styling */
+#boardSizeSelect {
+    width: 100%;
 }
 
 /* Instruction set checkboxes */
