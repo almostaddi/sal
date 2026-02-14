@@ -1,4 +1,4 @@
-// Board rendering and layout
+// Board rendering and layout with dynamic alignment for any board size
 export class BoardRenderer {
     constructor(boardSize = 100) {
         this.boardElement = document.getElementById('board');
@@ -48,17 +48,56 @@ export class BoardRenderer {
         this.boardElement.appendChild(rowDiv);
     }
     
+    // Calculate dynamic shift level for a square number
+    getShiftLevel(number) {
+        // Start shifting after square 11 (row 2)
+        const startShiftAt = 12;
+        
+        if (number < startShiftAt) {
+            return 0;
+        }
+        
+        // Calculate which "decade" row this is in (11-20 = row 2, 21-30 = row 3, etc.)
+        const shiftLevel = Math.floor((number - startShiftAt) / 10) + 1;
+        
+        // Cap at 9 levels of shift
+        return Math.min(shiftLevel, 9);
+    }
+    
+    // Determine if a square needs a connector and what type
+    getConnectorType(number) {
+        const isFinish = number === this.totalSquares;
+        
+        // No connectors for finish square or square 1
+        if (isFinish || number === 1) {
+            return null;
+        }
+        
+        const endsWithZero = number % 10 === 0;
+        const endsWithOne = number % 10 === 1;
+        
+        if (!endsWithZero && !endsWithOne) {
+            return null; // No connector needed
+        }
+        
+        const decade = Math.floor(number / 10);
+        const isOddDecade = decade % 2 === 1;
+        
+        if (endsWithZero) {
+            // Numbers ending in 0 connect upward
+            return isOddDecade ? 'up-right' : 'up';
+        } else {
+            // Numbers ending in 1 connect downward
+            return isOddDecade ? 'down-left' : 'down-left-tl';
+        }
+    }
+    
     // Create a single square
     createSquare(number) {
         const square = document.createElement('div');
         
-        // Calculate shift level (for stacked appearance)
-        let shiftLevel = 0;
-        const startShiftAt = 12;
-        if (number >= startShiftAt) {
-            shiftLevel = Math.floor((number - startShiftAt) / 10) + 1;
-            if (shiftLevel > 9) shiftLevel = 9;
-        }
+        // Calculate shift level
+        const shiftLevel = this.getShiftLevel(number);
         
         // Base classes
         let baseClass = 'square';
@@ -80,52 +119,23 @@ export class BoardRenderer {
         square.id = `square-${number}`;
         square.setAttribute('data-number', number);
         
-        // Add connector classes for winding path
-        const isFinish = number === this.totalSquares;
+        // Determine connector type
+        const connectorType = this.getConnectorType(number);
         
-        if (number % 10 === 0 && !isFinish) {
-            const decade = Math.floor(number / 10);
-            if (decade % 2 === 1) {
-                // 10, 30, 50, 70, 90 - bottom right
-                square.className = shiftClass ? 
-                    `${baseClass} ${shiftClass} square-connector-up-right` : 
-                    `${baseClass} square-connector-up-right`;
-                const inner = document.createElement('div');
-                inner.className = 'square-connector-inner';
-                inner.textContent = number;
-                square.appendChild(inner);
-            } else {
-                // 20, 40, 60, 80 - bottom left
-                square.className = shiftClass ? 
-                    `${baseClass} ${shiftClass} square-connector-up` : 
-                    `${baseClass} square-connector-up`;
-                const inner = document.createElement('div');
-                inner.className = 'square-connector-inner';
-                inner.textContent = number;
-                square.appendChild(inner);
-            }
-        } else if (number % 10 === 1 && number !== 1) {
-            const decade = Math.floor(number / 10);
-            if (decade % 2 === 1) {
-                // 11, 31, 51, 71, 91 - top right
-                square.className = shiftClass ? 
-                    `${baseClass} ${shiftClass} square-connector-down-left` : 
-                    `${baseClass} square-connector-down-left`;
-                const inner = document.createElement('div');
-                inner.className = 'square-connector-inner';
-                inner.textContent = number;
-                square.appendChild(inner);
-            } else {
-                // 21, 41, 61, 81 - top left
-                square.className = shiftClass ? 
-                    `${baseClass} ${shiftClass} square-connector-down-left-tl` : 
-                    `${baseClass} square-connector-down-left-tl`;
-                const inner = document.createElement('div');
-                inner.className = 'square-connector-inner';
-                inner.textContent = number;
-                square.appendChild(inner);
-            }
+        if (connectorType) {
+            // Add connector class
+            const connectorClass = `square-connector-${connectorType}`;
+            square.className = shiftClass ? 
+                `${baseClass} ${shiftClass} ${connectorClass}` : 
+                `${baseClass} ${connectorClass}`;
+            
+            // Create inner div for connector
+            const inner = document.createElement('div');
+            inner.className = 'square-connector-inner';
+            inner.textContent = number;
+            square.appendChild(inner);
         } else {
+            // Regular square - just add number as text content
             const inner = document.createElement('div');
             inner.style.width = '70px';
             inner.style.height = '70px';
