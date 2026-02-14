@@ -14,8 +14,11 @@ export default {
         toys: [
             { toy: 'pegs', quantity: 5 }
         ],
-        freeBodyParts: ['Ba'],
-        notHolding: []
+        freeBodyParts: [],  // Empty! Pegs don't need free body parts
+        notHolding: [],
+        bodyPartCapacity: [
+            { bodyPart: 'Ba', toy: 'pegs', spaceNeeded: 5 }
+        ]
     },
     
     getDifficulty: (difficulty, conditions, difficultyMap) => {
