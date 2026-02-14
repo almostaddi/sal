@@ -659,6 +659,22 @@ function resetSettings() {
         if (dropdown) dropdown.value = 'medium';
     });
     
+    // Update prize slider displays
+    document.getElementById('fullPercent').textContent = '33%';
+    document.getElementById('ruinPercent').textContent = '33%';
+    document.getElementById('deniedPercent').textContent = '34%';
+    document.getElementById('fullSlider').value = 33;
+    document.getElementById('ruinSlider').value = 33;
+    document.getElementById('deniedSlider').value = 34;
+    
+    // Update final challenge slider displays
+    document.getElementById('strokingPercent').textContent = '33%';
+    document.getElementById('vibePercent').textContent = '33%';
+    document.getElementById('analPercent').textContent = '34%';
+    document.getElementById('strokingSlider').value = 33;
+    document.getElementById('vibeSlider').value = 33;
+    document.getElementById('analSlider').value = 34;
+    
     // Re-initialize UI completely
     initializeUI();
     
