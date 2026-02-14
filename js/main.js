@@ -261,9 +261,16 @@ function setupEventListeners() {
         saveGameState();
     });
     
-    // Reset button
+    // Reset button - check which page we're on
     document.getElementById('resetBtn').addEventListener('click', () => {
-        document.getElementById('resetModal').classList.add('active');
+        const isOnHomePage = document.body.classList.contains('on-home-page');
+        if (isOnHomePage) {
+            // On home page - reset settings
+            resetSettings();
+        } else {
+            // On board/task page - show reset game modal
+            document.getElementById('resetModal').classList.add('active');
+        }
     });
     
     // Patch notes button
@@ -498,21 +505,49 @@ function restoreSavedGame(state) {
     }
 }
 
-// Reset game
+// Reset game (only resets game progress, keeps settings)
 function resetGame() {
     console.log('🔄 Resetting game...');
     
-    resetGameState();
+    // Only reset game progress state, not settings
+    window.GAME_STATE.gameStarted = false;
+    window.GAME_STATE.playerPosition = 0;
+    window.GAME_STATE.turnCount = 0;
+    window.GAME_STATE.turnCountBySet = {};
+    window.GAME_STATE.turnCountByToy = {};
+    window.GAME_STATE.lastSelectedSet = {};
+    window.GAME_STATE.completedOnlyOnceTasks = {};
+    window.GAME_STATE.forceNextTask = null;
+    window.GAME_STATE.scheduledTasks = [];
+    window.GAME_STATE.disabledTasks = new Set();
+    window.GAME_STATE.taskWeights = {};
+    window.GAME_STATE.customFlags = {};
+    window.GAME_STATE.currentInstruction = '';
+    window.GAME_STATE.diceResultText = 'Dice: -';
+    window.GAME_STATE.pendingSnakeLadder = null;
+    window.GAME_STATE.gamePhase = 'awaiting_dice_roll';
+    
+    // Reset body part state
+    window.GAME_STATE.bodyPartState = {
+        Mo: { name: "Mo", items: [] },
+        Ba: { name: "Ba", items: [] },
+        Bu: { name: "Bu", items: [] },
+        As: { name: "As", items: [] },
+        Ni: { name: "Ni", items: [] },
+        Ha: { name: "Ha", items: [] },
+        Bo: { name: "Bo", items: [] },
+        Pe: { name: "Pe", items: [] }
+    };
+    
+    // Reset player state
     resetPlayerState();
     
-    // Reset UI
-    document.getElementById('playerNameInput').value = '';
-    document.getElementById('boardSizeSelect').value = '100';
+    // Reset UI elements (but keep settings)
     document.getElementById('turnCounter').textContent = 'Turn: 0';
     document.getElementById('diceResult').textContent = 'Dice: -';
     document.getElementById('testJumpInput').value = '';
     
-    // ✅ FIX: Reset roll dice button
+    // Reset roll dice button
     const rollDiceButton = document.getElementById('rollDice');
     rollDiceButton.textContent = '🎲 Roll Dice';
     rollDiceButton.disabled = false;
@@ -524,13 +559,8 @@ function resetGame() {
     instructions.classList.remove('active');
     instructions.innerHTML = '';
     
-    // Reset checkboxes
-    document.querySelectorAll('#instructionSetCheckboxes input[type="checkbox"]').forEach(cb => {
-        cb.checked = false;
-    });
-    
-    // Re-initialize UI
-    initializeUI();
+    // Save state
+    saveGameState();
     
     // Close modal
     document.getElementById('resetModal').classList.remove('active');
@@ -539,6 +569,100 @@ function resetGame() {
     showPage('home');
     
     console.log('✅ Game reset complete');
+}
+
+// Reset settings (resets all settings to defaults)
+function resetSettings() {
+    console.log('🔄 Resetting settings...');
+    
+    // Clear localStorage completely
+    resetGameState();
+    resetPlayerState();
+    
+    // Reset ALL UI elements to defaults
+    document.getElementById('playerNameInput').value = '';
+    document.getElementById('boardSizeSelect').value = '100';
+    
+    // Reset instruction set checkboxes
+    document.querySelectorAll('#instructionSetCheckboxes input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+    
+    // Reset prize sliders to defaults
+    window.GAME_STATE.prizeSettings = { full: 33, ruin: 33, denied: 34 };
+    
+    // Reset final challenge sliders to defaults
+    window.GAME_STATE.finalChallengeSettings = { stroking: 33, vibe: 33, anal: 34 };
+    
+    // Reset final challenge types
+    window.GAME_STATE.finalChallengeTypes = {
+        stroking_icyhot: false,
+        stroking_icewater: false,
+        stroking_ktb: false,
+        stroking_ballsqueeze: false,
+        stroking_2finger: false,
+        vibe_icyhot: false,
+        vibe_icewater: false,
+        anal_vibe: false
+    };
+    
+    // Reset final challenge difficulties
+    window.GAME_STATE.finalChallengeDifficulties = {
+        stroking: 'medium',
+        vibe: 'medium',
+        anal: 'medium'
+    };
+    
+    // Reset final challenge modifier chances
+    window.GAME_STATE.finalChallengeModifierChances = {
+        stroking_icyhot: 10,
+        stroking_icewater: 10,
+        stroking_ktb: 10,
+        stroking_ballsqueeze: 10,
+        stroking_2finger: 10,
+        vibe_icyhot: 10,
+        vibe_icewater: 10,
+        anal_vibe: 10,
+        ce: 10,
+        pf: 10
+    };
+    
+    // Reset final challenge modifiers (CE, PF)
+    window.GAME_STATE.finalChallengeModifiers = {
+        ce: false,
+        pf: false
+    };
+    
+    // Reset all final challenge checkboxes
+    ['stroking_icyhot', 'stroking_icewater', 'stroking_ktb', 'stroking_ballsqueeze', 'stroking_2finger',
+     'vibe_icyhot', 'vibe_icewater', 'anal_vibe'].forEach(id => {
+        const checkbox = document.getElementById(id);
+        if (checkbox) checkbox.checked = false;
+    });
+    
+    // Reset modifier checkboxes (CE, PF)
+    ['ce', 'pf'].forEach(mod => {
+        const checkbox = document.getElementById(`modifier_${mod}`);
+        if (checkbox) checkbox.checked = false;
+    });
+    
+    // Reset all modifier chance inputs
+    ['stroking_icyhot', 'stroking_icewater', 'stroking_ktb', 'stroking_ballsqueeze', 'stroking_2finger',
+     'vibe_icyhot', 'vibe_icewater', 'anal_vibe', 'ce', 'pf'].forEach(id => {
+        const input = document.getElementById(`${id}_chance`);
+        if (input) input.value = 10;
+    });
+    
+    // Reset final challenge difficulty dropdowns
+    ['stroking', 'vibe', 'anal'].forEach(type => {
+        const dropdown = document.getElementById(`${type}Difficulty`);
+        if (dropdown) dropdown.value = 'medium';
+    });
+    
+    // Re-initialize UI completely
+    initializeUI();
+    
+    console.log('✅ Settings reset complete');
 }
 
 // Expose showPage globally for other modules
