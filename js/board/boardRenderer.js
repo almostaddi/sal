@@ -1,4 +1,4 @@
-// Board rendering and layout with dynamic alignment for any board size
+// Board rendering and layout - using inline transforms for dynamic alignment
 export class BoardRenderer {
     constructor(boardSize = 100) {
         this.boardElement = document.getElementById('board');
@@ -48,20 +48,18 @@ export class BoardRenderer {
         this.boardElement.appendChild(rowDiv);
     }
     
-    // Calculate dynamic shift level for a square number
-    getShiftLevel(number) {
-        // Start shifting after square 11 (row 2)
+    // Calculate dynamic shift amount in pixels (based on example HTML)
+    getShiftAmount(number) {
         const startShiftAt = 12;
-        
         if (number < startShiftAt) {
             return 0;
         }
         
-        // Calculate which "decade" row this is in (11-20 = row 2, 21-30 = row 3, etc.)
+        // Calculate shift level
         const shiftLevel = Math.floor((number - startShiftAt) / 10) + 1;
         
-        // Cap at 9 levels of shift
-        return Math.min(shiftLevel, 9);
+        // 9px per level (matches the example)
+        return shiftLevel * 9;
     }
     
     // Determine if a square needs a connector and what type
@@ -96,12 +94,11 @@ export class BoardRenderer {
     createSquare(number) {
         const square = document.createElement('div');
         
-        // Calculate shift level
-        const shiftLevel = this.getShiftLevel(number);
+        // Calculate shift amount
+        const shiftAmount = this.getShiftAmount(number);
         
         // Base classes
         let baseClass = 'square';
-        let shiftClass = shiftLevel > 0 ? `square-shift-${shiftLevel}` : '';
         
         // Check for snakes and ladders
         const isSnake = this.snakes[number];
@@ -115,7 +112,7 @@ export class BoardRenderer {
             square.setAttribute('data-destination', '↑' + this.ladders[number]);
         }
         
-        square.className = shiftClass ? `${baseClass} ${shiftClass}` : baseClass;
+        square.className = baseClass;
         square.id = `square-${number}`;
         square.setAttribute('data-number', number);
         
@@ -125,9 +122,7 @@ export class BoardRenderer {
         if (connectorType) {
             // Add connector class
             const connectorClass = `square-connector-${connectorType}`;
-            square.className = shiftClass ? 
-                `${baseClass} ${shiftClass} ${connectorClass}` : 
-                `${baseClass} ${connectorClass}`;
+            square.className = `${baseClass} ${connectorClass}`;
             
             // Create inner div for connector
             const inner = document.createElement('div');
@@ -136,16 +131,20 @@ export class BoardRenderer {
             square.appendChild(inner);
         } else {
             // Regular square - just add number as text content
-            const inner = document.createElement('div');
-            inner.style.width = '70px';
-            inner.style.height = '70px';
-            inner.style.display = 'flex';
-            inner.style.alignItems = 'center';
-            inner.style.justifyContent = 'center';
-            inner.style.fontSize = '24px';
-            inner.style.fontWeight = 'bold';
-            inner.textContent = number;
-            square.appendChild(inner);
+            square.textContent = number;
+        }
+        
+        // Apply inline transform for shift (like the example HTML)
+        if (shiftAmount > 0) {
+            square.style.transform = `translateY(-${shiftAmount}px)`;
+            
+            // Add hover handlers to maintain shift while hovering
+            square.addEventListener('mouseenter', function() {
+                this.style.transform = `translateY(-${shiftAmount}px) scale(1.1)`;
+            });
+            square.addEventListener('mouseleave', function() {
+                this.style.transform = `translateY(-${shiftAmount}px)`;
+            });
         }
         
         return square;
