@@ -68,6 +68,41 @@ function showPage(pageName) {
     }
 }
 
+// Validate and round board size
+function validateBoardSize(input) {
+    let value = parseInt(input.value);
+    
+    // Allow empty during typing
+    if (isNaN(value) || input.value === '') {
+        return;
+    }
+    
+    // Enforce minimum of 10
+    if (value < 10) {
+        value = 10;
+    }
+    
+    // Round to nearest 10
+    value = Math.round(value / 10) * 10;
+    
+    // Ensure it's at least 10 after rounding
+    if (value < 10) {
+        value = 10;
+    }
+    
+    input.value = value;
+    
+    // Update game state
+    window.GAME_STATE.totalSquares = value;
+    
+    if (boardRenderer && window.GAME_STATE.gameStarted) {
+        boardRenderer.updateSize(value);
+        boardRenderer.create();
+    }
+    
+    saveGameState();
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎲 Snakes and Ladders - Initializing...');
@@ -169,80 +204,19 @@ function setupEventListeners() {
     // Start game button
     document.getElementById('startButton').addEventListener('click', startGame);
     
-    // Board size input - round to nearest 10 and enforce minimum on blur
-    document.getElementById('boardSizeSelect').addEventListener('blur', function() {
-        let value = parseInt(this.value) || 10;
-        
-        // Enforce minimum of 10
-        if (value < 10) {
-            value = 10;
-        }
-        
-        // Round to nearest 10
-        value = Math.round(value / 10) * 10;
-        
-        // Ensure it's at least 10 after rounding
-        if (value < 10) {
-            value = 10;
-        }
-        
-        this.value = value;
-        
-        // Update game state
-        window.GAME_STATE.totalSquares = value;
-        
-        if (boardRenderer && window.GAME_STATE.gameStarted) {
-            boardRenderer.updateSize(value);
-            boardRenderer.create();
-        }
-        
-        saveGameState();
+    // Board size input - validate and round on blur (when user clicks away or presses enter)
+    const boardSizeInput = document.getElementById('boardSizeSelect');
+    
+    boardSizeInput.addEventListener('blur', function() {
+        validateBoardSize(this);
     });
     
-    // Validate on input (typing) to prevent invalid values
-    document.getElementById('boardSizeSelect').addEventListener('input', function() {
-        let value = parseInt(this.value);
-        
-        // Allow empty during typing
-        if (isNaN(value)) {
-            return;
+    // Also validate on Enter key
+    boardSizeInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            validateBoardSize(this);
+            this.blur(); // Remove focus
         }
-        
-        // Enforce minimum of 10
-        if (value < 10) {
-            this.value = 10;
-            value = 10;
-        }
-    });
-    
-    // Also validate on change (for up/down arrows)
-    document.getElementById('boardSizeSelect').addEventListener('change', function() {
-        let value = parseInt(this.value) || 10;
-        
-        // Enforce minimum of 10
-        if (value < 10) {
-            value = 10;
-        }
-        
-        // Round to nearest 10
-        value = Math.round(value / 10) * 10;
-        
-        // Ensure it's at least 10 after rounding
-        if (value < 10) {
-            value = 10;
-        }
-        
-        this.value = value;
-        
-        // Update game state
-        window.GAME_STATE.totalSquares = value;
-        
-        if (boardRenderer && window.GAME_STATE.gameStarted) {
-            boardRenderer.updateSize(value);
-            boardRenderer.create();
-        }
-        
-        saveGameState();
     });
     
     // Player name input
@@ -324,8 +298,11 @@ function startGame() {
     window.GAME_STATE.gameStarted = true;
     window.GAME_STATE.gamePhase = 'awaiting_dice_roll';
     
-    // Get board size
-    const boardSize = parseInt(document.getElementById('boardSizeSelect').value);
+    // Get board size - validate it first
+    const boardSizeInput = document.getElementById('boardSizeSelect');
+    validateBoardSize(boardSizeInput);
+    const boardSize = parseInt(boardSizeInput.value);
+    
     window.GAME_STATE.totalSquares = boardSize;
     boardRenderer.updateSize(boardSize);
     
