@@ -76,6 +76,30 @@ function showPage(pageName) {
     }
 }
 
+// Update classic radio button state based on board size
+function updateClassicRadioState(boardSize) {
+    const classicRadio = document.querySelector('input[name="snakesLaddersMode"][value="classic"]');
+    if (!classicRadio) return;
+    
+    const isSize100 = boardSize === 100;
+    classicRadio.disabled = !isSize100;
+    
+    const label = classicRadio.parentElement;
+    if (label) {
+        label.style.opacity = isSize100 ? '1' : '0.5';
+        label.style.cursor = isSize100 ? 'pointer' : 'not-allowed';
+    }
+    
+    // If board size changed from 100 and classic is selected, switch to random
+    if (!isSize100 && classicRadio.checked) {
+        const randomRadio = document.querySelector('input[name="snakesLaddersMode"][value="random"]');
+        if (randomRadio) {
+            randomRadio.checked = true;
+            handleSnakesLaddersModeChange('random');
+        }
+    }
+}
+
 // Validate and round board size
 function validateBoardSize(input) {
     let value = parseInt(input.value);
@@ -112,23 +136,8 @@ function validateBoardSize(input) {
     // Update game state
     window.GAME_STATE.totalSquares = value;
     
-    // If board size is not 100 and mode is classic, switch to random
-    const classicRadio = document.querySelector('input[name="snakesLaddersMode"][value="classic"]');
-    if (value !== 100 && window.GAME_STATE.snakesLaddersMode === 'classic') {
-        const randomRadio = document.querySelector('input[name="snakesLaddersMode"][value="random"]');
-        randomRadio.checked = true;
-        handleSnakesLaddersModeChange('random');
-    }
-    
     // Update classic radio state
-    if (classicRadio) {
-        classicRadio.disabled = (value !== 100);
-        const label = classicRadio.parentElement;
-        if (label) {
-            label.style.opacity = value !== 100 ? '0.5' : '1';
-            label.style.cursor = value !== 100 ? 'not-allowed' : 'pointer';
-        }
-    }
+    updateClassicRadioState(value);
     
     if (boardRenderer && window.GAME_STATE.gameStarted) {
         boardRenderer.updateSize(value);
@@ -263,6 +272,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize UI
     initializeUI();
     
+    // Initialize classic radio state based on board size
+    updateClassicRadioState(savedState?.totalSquares || 100);
+    
     // Load task registry
     console.log('📦 Loading task registry...');
     const registry = await loadTaskRegistry();
@@ -316,6 +328,9 @@ function setupEventListeners() {
         
         // Don't enforce minimum during typing (wait for blur)
         // This allows user to type "5" on their way to "50"
+        
+        // Update classic radio state immediately based on input value
+        updateClassicRadioState(parseInt(this.value) || 100);
     });
     
     // Validate and round on blur (when user clicks away)
