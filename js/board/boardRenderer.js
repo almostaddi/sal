@@ -1,4 +1,4 @@
-// Board rendering and layout - with improved scaling and positioning
+// Board rendering and layout - maintains equal visual spacing regardless of board size
 export class BoardRenderer {
     constructor(boardSize = 100) {
         this.boardElement = document.getElementById('board');
@@ -48,7 +48,7 @@ export class BoardRenderer {
         this.boardElement.appendChild(rowDiv);
     }
     
-    // Calculate dynamic shift amount in pixels (based on example HTML)
+    // Calculate dynamic shift amount in pixels
     getShiftAmount(number) {
         const startShiftAt = 12;
         if (number < startShiftAt) {
@@ -58,7 +58,7 @@ export class BoardRenderer {
         // Calculate shift level
         const shiftLevel = Math.floor((number - startShiftAt) / 10) + 1;
         
-        // 9px per level (matches the example)
+        // 9px per level
         return shiftLevel * 9;
     }
     
@@ -134,7 +134,7 @@ export class BoardRenderer {
             square.textContent = number;
         }
         
-        // Apply inline transform for shift (like the example HTML)
+        // Apply inline transform for shift
         if (shiftAmount > 0) {
             square.style.transform = `translateY(-${shiftAmount}px)`;
             
@@ -150,7 +150,7 @@ export class BoardRenderer {
         return square;
     }
     
-    // Scale board to fit window
+    // Scale board to fit window - maintains equal visual spacing
     scale() {
         // Reset scale to get natural dimensions
         this.boardElement.style.transform = 'scale(1)';
@@ -162,35 +162,31 @@ export class BoardRenderer {
         // Get available space
         const windowWidth = window.innerWidth - 40; // 20px padding on each side
         
-        // Account for title (h1), controls, and padding
-        // Title: ~100px, Controls: ~150px, Padding/margins: ~100px
-        const reservedHeight = 350;
+        // Calculate available height
+        // Title: ~100px (h1 + margin)
+        // Controls: ~150px (buttons + spacing)
+        // Gaps: 40px (20px above board + 20px below board from parent gap)
+        // Extra buffer: 50px for safety
+        const reservedHeight = 340;
         const windowHeight = window.innerHeight - reservedHeight;
         
         // Calculate scale factors
         const scaleX = windowWidth / boardWidth;
         const scaleY = windowHeight / boardHeight;
         
-        // Prioritize width fitting, allow vertical scroll if needed
-        // Use the smaller of scaleX or scaleY, but don't scale up beyond 100%
-        const minScale = 0.3; // Never go below 30%
-        const maxScale = 1.0; // Never go above 100%
+        // Use the smaller scale to ensure board fits both dimensions
+        const minScale = 0.2; // Never go below 20% (allows very large boards)
+        const maxScale = 1.0; // Never scale up beyond 100%
         
-        let scale;
-        if (boardHeight * scaleX <= windowHeight) {
-            // Board fits vertically when scaled to width
-            scale = Math.min(scaleX, maxScale);
-        } else {
-            // Board is too tall even when scaled to width
-            // Use the smaller scale to fit everything
-            scale = Math.min(scaleX, scaleY, maxScale);
-        }
+        let scale = Math.min(scaleX, scaleY);
         
-        // Apply minimum scale
-        scale = Math.max(scale, minScale);
+        // Clamp to min/max
+        scale = Math.max(Math.min(scale, maxScale), minScale);
         
         // Apply scale with center origin
         this.boardElement.style.transform = `scale(${scale})`;
         this.boardElement.style.transformOrigin = 'center center';
+        
+        console.log(`Board scaled to ${(scale * 100).toFixed(1)}% (${boardWidth}x${boardHeight} -> ${Math.round(boardWidth * scale)}x${Math.round(boardHeight * scale)})`);
     }
 }
