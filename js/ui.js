@@ -11,11 +11,16 @@ export function initializeUI() {
 }
 
 // Setup instruction set checkboxes
+let isRestoringUI = false;
 function setupInstructionSetCheckboxes() {
     const checkboxes = document.querySelectorAll('#instructionSetCheckboxes input[type="checkbox"]');
     
     checkboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => {
+            if (isRestoringUI) {
+                console.log('Skipping renderToyLibrary during UI restore');
+                return;
+            }
             updateSelectedSets();
             renderToyLibrary();
             saveGameState();
@@ -807,10 +812,15 @@ function getSelectedToys() {
 
 // Restore UI state from saved game
 export function restoreUIState(state) {
+    isRestoringUI = true;
+    
     // Restore checkboxes
     document.querySelectorAll('#instructionSetCheckboxes input[type="checkbox"]').forEach(cb => {
         cb.checked = state.selectedSets.includes(cb.value);
     });
+    
+    // Update selected sets in state
+    window.GAME_STATE.selectedSets = state.selectedSets;
     
     // Restore sliders
     updateSliderDisplays(true);
@@ -822,6 +832,5 @@ export function restoreUIState(state) {
     // Restore board size
     document.getElementById('boardSizeSelect').value = state.totalSquares;
     
-    // Toy library will be rendered by the next updateSelectedSets call from checkbox changes
-    // or it's already been rendered by initializeUI
+    isRestoringUI = false;
 }
