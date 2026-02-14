@@ -34,17 +34,18 @@
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-/* Body */
+/* Body - allow unlimited vertical growth */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh;
+    min-height: 100vh; /* Minimum height, but can grow */
     padding: 20px;
     background: var(--primary-gradient);
     color: var(--text-primary);
     overflow-x: hidden;
+    overflow-y: auto; /* Allow vertical scrolling */
 }
 
 /* Main heading */
@@ -158,11 +159,12 @@ a:hover {
     display: block;
 }
 
-/* Board page specific - remove default flex layout */
+/* Board page specific - allow unlimited vertical growth */
 #boardPage {
     display: none;
     width: 100%;
-    padding-top: 80px; /* More space for title to prevent overlap */
+    padding-top: 0; /* Remove top padding */
+    min-height: auto; /* Don't force minimum height */
 }
 
 #boardPage.active {
@@ -380,6 +382,6 @@ body.show-fixed-buttons #patchNotesBtn {
     }
     
     #boardPage {
-        padding-top: 60px;
+        padding-top: 0;
     }
 }
