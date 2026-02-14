@@ -536,7 +536,7 @@ input[type="range"]::-moz-range-thumb {
     margin: 0;
 }
 
-/* Challenge type checkboxes */
+/* Challenge type checkboxes - FIXED: More specific selector to prevent matching toy library */
 .settings-section > div > div > div:last-child {
     margin-left: 20px;
     display: flex;
@@ -554,10 +554,12 @@ input[type="range"]::-moz-range-thumb {
     background: transparent;
 }
 
-.settings-section > div > div > div:last-child input[type="checkbox"] {
+/* FIXED: Added 'label' to selector to make it more specific and not match toy checkboxes */
+.settings-section > div > div > div:last-child label input[type="checkbox"] {
     width: 16px;
     height: 16px;
     cursor: pointer;
+    accent-color: #667eea;
     margin: 0;
 }
 
