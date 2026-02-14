@@ -27,18 +27,7 @@
                 <input type="text" id="playerNameInput" placeholder="Enter your name">
                 
                 <label>🎯 Board Size:</label>
-                <select id="boardSizeSelect">
-                    <option value="10">10 Squares</option>
-                    <option value="20">20 Squares</option>
-                    <option value="30">30 Squares</option>
-                    <option value="40">40 Squares</option>
-                    <option value="50">50 Squares</option>
-                    <option value="60">60 Squares</option>
-                    <option value="70">70 Squares</option>
-                    <option value="80">80 Squares</option>
-                    <option value="90">90 Squares</option>
-                    <option value="100" selected>100 Squares</option>
-                </select>
+                <input type="number" id="boardSizeSelect" min="10" step="10" value="100" placeholder="Board size">
                 
                 <label>📦 Select Instruction Sets:</label>
                 <div id="instructionSetCheckboxes" class="instruction-set-selector">
