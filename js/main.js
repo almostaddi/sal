@@ -224,6 +224,24 @@ function setupEventListeners() {
         }
     });
     
+    // Enforce min/max while typing or using arrow keys
+    boardSizeInput.addEventListener('input', function(e) {
+        let value = parseInt(this.value);
+        
+        // Allow empty during typing
+        if (isNaN(value) || this.value === '') {
+            return;
+        }
+        
+        // Cap at maximum
+        if (value > 1000) {
+            this.value = 1000;
+        }
+        
+        // Don't enforce minimum during typing (wait for blur)
+        // This allows user to type "5" on their way to "50"
+    });
+    
     // Validate and round on blur (when user clicks away)
     boardSizeInput.addEventListener('blur', function() {
         validateBoardSize(this);
