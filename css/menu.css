@@ -434,9 +434,11 @@ select {
 .slider-label {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0; /* CHANGED: Removed whitespace (was 2px) */
+    margin-bottom: 0;
+    padding-bottom: 0; /* ADDED: Explicitly remove padding */
     color: #333;
     font-weight: bold;
+    font-size: 16px; /* ADDED: Slightly larger than default */
     line-height: 1.2; /* Keep tighter line height */
 }
 
@@ -507,9 +509,10 @@ input[type="range"]::-moz-range-thumb {
 
 .settings-section > div > div > div:first-child {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start; /* CHANGED: from space-between to flex-start */
     align-items: center;
     margin-bottom: 6px; /* CHANGED: Reduced from 8px to 6px */
+    gap: 10px; /* ADDED: Space between label and difficulty controls */
 }
 
 .settings-section > div > div > div:first-child > div:first-child {
