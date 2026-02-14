@@ -11,8 +11,11 @@
                     "toys": [
                         { "toy": "pegs", "quantity": 5 }
                     ],
-                    "freeBodyParts": ["Ba"],
-                    "notHolding": []
+                    "freeBodyParts": [],
+                    "notHolding": [],
+                    "bodyPartCapacity": [
+                        { "bodyPart": "Ba", "toy": "pegs", "spaceNeeded": 5 }
+                    ]
                 },
                 "baseWeight": 1
             },
