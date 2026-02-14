@@ -128,6 +128,35 @@ export function loadGameState() {
         Object.assign(window.GAME_STATE, state);
         window.GAME_STATE.disabledTasks = new Set(state.disabledTasks || []);
         
+        // FIX: Ensure CE and PF modifiers are properly restored
+        if (!window.GAME_STATE.finalChallengeModifiers) {
+            window.GAME_STATE.finalChallengeModifiers = { ce: false, pf: false };
+        }
+        
+        // FIX: Ensure CE and PF modifier chances are properly restored
+        if (!window.GAME_STATE.finalChallengeModifierChances) {
+            window.GAME_STATE.finalChallengeModifierChances = {
+                stroking_icyhot: 10,
+                stroking_icewater: 10,
+                stroking_ktb: 10,
+                stroking_ballsqueeze: 10,
+                stroking_2finger: 10,
+                vibe_icyhot: 10,
+                vibe_icewater: 10,
+                anal_vibe: 10,
+                ce: 10,
+                pf: 10
+            };
+        } else {
+            // Ensure CE and PF are present even if they weren't in the saved state
+            if (window.GAME_STATE.finalChallengeModifierChances.ce === undefined) {
+                window.GAME_STATE.finalChallengeModifierChances.ce = 10;
+            }
+            if (window.GAME_STATE.finalChallengeModifierChances.pf === undefined) {
+                window.GAME_STATE.finalChallengeModifierChances.pf = 10;
+            }
+        }
+        
         return state;
     } catch (e) {
         console.error('Failed to load saved game:', e);
@@ -140,7 +169,7 @@ export function resetGameState() {
     // Clear localStorage
     localStorage.removeItem('snakesLaddersGameState');
     
-    // Reset game state
+    // Reset game state to defaults
     window.GAME_STATE.gameStarted = false;
     window.GAME_STATE.playerPosition = 0;
     window.GAME_STATE.turnCount = 0;
@@ -165,6 +194,24 @@ export function resetGameState() {
     window.GAME_STATE.currentInstruction = '';
     window.GAME_STATE.diceResultText = 'Dice: -';
     window.GAME_STATE.pendingSnakeLadder = null;
+    window.GAME_STATE.totalSquares = 100;
+    window.GAME_STATE.prizeSettings = { full: 33, ruin: 33, denied: 34 };
+    window.GAME_STATE.finalChallengeSettings = { stroking: 33, vibe: 33, anal: 34 };
+    window.GAME_STATE.finalChallengeTypes = {
+        stroking_icyhot: false,
+        stroking_icewater: false,
+        stroking_ktb: false,
+        stroking_ballsqueeze: false,
+        stroking_2finger: false,
+        vibe_icyhot: false,
+        vibe_icewater: false,
+        anal_vibe: false
+    };
+    window.GAME_STATE.finalChallengeDifficulties = {
+        stroking: 'medium',
+        vibe: 'medium',
+        anal: 'medium'
+    };
     window.GAME_STATE.finalChallengeModifierChances = {
         stroking_icyhot: 10,
         stroking_icewater: 10,
@@ -176,6 +223,10 @@ export function resetGameState() {
         anal_vibe: 10,
         ce: 10,
         pf: 10
+    };
+    window.GAME_STATE.finalChallengeModifiers = {
+        ce: false,
+        pf: false
     };
     
     // Reset body part state
