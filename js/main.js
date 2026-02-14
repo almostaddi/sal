@@ -169,60 +169,81 @@ function setupEventListeners() {
     // Start game button
     document.getElementById('startButton').addEventListener('click', startGame);
     
-// Board size input validation
-// Add this to the setupEventListeners() function in main.js
-
-// Board size input - round to nearest 10 and enforce minimum
-document.getElementById('boardSizeSelect').addEventListener('blur', function() {
-    let value = parseInt(this.value) || 10;
+    // Board size input - round to nearest 10 and enforce minimum on blur
+    document.getElementById('boardSizeSelect').addEventListener('blur', function() {
+        let value = parseInt(this.value) || 10;
+        
+        // Enforce minimum of 10
+        if (value < 10) {
+            value = 10;
+        }
+        
+        // Round to nearest 10
+        value = Math.round(value / 10) * 10;
+        
+        // Ensure it's at least 10 after rounding
+        if (value < 10) {
+            value = 10;
+        }
+        
+        this.value = value;
+        
+        // Update game state
+        window.GAME_STATE.totalSquares = value;
+        
+        if (boardRenderer && window.GAME_STATE.gameStarted) {
+            boardRenderer.updateSize(value);
+            boardRenderer.create();
+        }
+        
+        saveGameState();
+    });
     
-    // Enforce minimum of 10
-    if (value < 10) {
-        value = 10;
-    }
+    // Validate on input (typing) to prevent invalid values
+    document.getElementById('boardSizeSelect').addEventListener('input', function() {
+        let value = parseInt(this.value);
+        
+        // Allow empty during typing
+        if (isNaN(value)) {
+            return;
+        }
+        
+        // Enforce minimum of 10
+        if (value < 10) {
+            this.value = 10;
+            value = 10;
+        }
+    });
     
-    // Round to nearest 10
-    value = Math.round(value / 10) * 10;
-    
-    // Ensure it's at least 10 after rounding
-    if (value < 10) {
-        value = 10;
-    }
-    
-    this.value = value;
-    
-    // Update game state
-    window.GAME_STATE.totalSquares = value;
-    
-    if (boardRenderer && window.GAME_STATE.gameStarted) {
-        boardRenderer.updateSize(value);
-        boardRenderer.create();
-    }
-    
-    saveGameState();
-});
-
-// Also validate on change (for up/down arrows)
-document.getElementById('boardSizeSelect').addEventListener('change', function() {
-    let value = parseInt(this.value) || 10;
-    
-    // Enforce minimum of 10
-    if (value < 10) {
-        value = 10;
-    }
-    
-    this.value = value;
-    
-    // Update game state
-    window.GAME_STATE.totalSquares = value;
-    
-    if (boardRenderer && window.GAME_STATE.gameStarted) {
-        boardRenderer.updateSize(value);
-        boardRenderer.create();
-    }
-    
-    saveGameState();
-});
+    // Also validate on change (for up/down arrows)
+    document.getElementById('boardSizeSelect').addEventListener('change', function() {
+        let value = parseInt(this.value) || 10;
+        
+        // Enforce minimum of 10
+        if (value < 10) {
+            value = 10;
+        }
+        
+        // Round to nearest 10
+        value = Math.round(value / 10) * 10;
+        
+        // Ensure it's at least 10 after rounding
+        if (value < 10) {
+            value = 10;
+        }
+        
+        this.value = value;
+        
+        // Update game state
+        window.GAME_STATE.totalSquares = value;
+        
+        if (boardRenderer && window.GAME_STATE.gameStarted) {
+            boardRenderer.updateSize(value);
+            boardRenderer.create();
+        }
+        
+        saveGameState();
+    });
     
     // Player name input
     document.getElementById('playerNameInput').addEventListener('input', function() {
@@ -334,19 +355,6 @@ function startGame() {
     saveGameState();
     
     console.log('🎮 Game Started!');
-}
-
-// Update board size
-function updateBoardSize() {
-    const newSize = parseInt(document.getElementById('boardSizeSelect').value);
-    window.GAME_STATE.totalSquares = newSize;
-    
-    if (boardRenderer && window.GAME_STATE.gameStarted) {
-        boardRenderer.updateSize(newSize);
-        boardRenderer.create();
-    }
-    
-    saveGameState();
 }
 
 // Restore saved game
