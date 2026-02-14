@@ -1,4 +1,4 @@
-// Board rendering and layout - maintains equal visual spacing regardless of board size
+// Board rendering and layout - scales based on window width only
 export class BoardRenderer {
     constructor(boardSize = 100) {
         this.boardElement = document.getElementById('board');
@@ -150,43 +150,29 @@ export class BoardRenderer {
         return square;
     }
     
-    // Scale board to fit window - maintains equal visual spacing
+    // Scale board to fit window WIDTH only (allow vertical scroll)
     scale() {
         // Reset scale to get natural dimensions
         this.boardElement.style.transform = 'scale(1)';
-        this.boardElement.style.transformOrigin = 'center center';
+        this.boardElement.style.transformOrigin = 'top center';
         
         const boardWidth = this.boardElement.scrollWidth;
-        const boardHeight = this.boardElement.scrollHeight;
         
-        // Get available space
+        // Get available width
         const windowWidth = window.innerWidth - 40; // 20px padding on each side
         
-        // Calculate available height
-        // Title: ~100px (h1 + margin)
-        // Controls: ~150px (buttons + spacing)
-        // Gaps: 40px (20px above board + 20px below board from parent gap)
-        // Extra buffer: 50px for safety
-        const reservedHeight = 340;
-        const windowHeight = window.innerHeight - reservedHeight;
-        
-        // Calculate scale factors
+        // Calculate scale based on WIDTH only
         const scaleX = windowWidth / boardWidth;
-        const scaleY = windowHeight / boardHeight;
         
-        // Use the smaller scale to ensure board fits both dimensions
-        const minScale = 0.2; // Never go below 20% (allows very large boards)
-        const maxScale = 1.0; // Never scale up beyond 100%
+        // Clamp scale (don't scale up beyond 100%, minimum 50%)
+        const minScale = 0.5;
+        const maxScale = 1.0;
+        const scale = Math.max(Math.min(scaleX, maxScale), minScale);
         
-        let scale = Math.min(scaleX, scaleY);
-        
-        // Clamp to min/max
-        scale = Math.max(Math.min(scale, maxScale), minScale);
-        
-        // Apply scale with center origin
+        // Apply scale with top-center origin (board grows downward naturally)
         this.boardElement.style.transform = `scale(${scale})`;
-        this.boardElement.style.transformOrigin = 'center center';
+        this.boardElement.style.transformOrigin = 'top center';
         
-        console.log(`Board scaled to ${(scale * 100).toFixed(1)}% (${boardWidth}x${boardHeight} -> ${Math.round(boardWidth * scale)}x${Math.round(boardHeight * scale)})`);
+        console.log(`Board scaled to ${(scale * 100).toFixed(1)}% (width: ${boardWidth}px -> ${Math.round(boardWidth * scale)}px)`);
     }
 }
