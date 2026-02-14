@@ -72,9 +72,10 @@ function showPage(pageName) {
 function validateBoardSize(input) {
     let value = parseInt(input.value);
     
-    // Allow empty during typing
+    // Handle invalid/empty input
     if (isNaN(value) || input.value === '') {
-        return;
+        input.value = 100; // Default to 100
+        value = 100;
     }
     
     // Enforce minimum of 10
@@ -82,12 +83,20 @@ function validateBoardSize(input) {
         value = 10;
     }
     
+    // Enforce maximum of 1000
+    if (value > 1000) {
+        value = 1000;
+    }
+    
     // Round to nearest 10
     value = Math.round(value / 10) * 10;
     
-    // Ensure it's at least 10 after rounding
+    // Ensure it's within bounds after rounding
     if (value < 10) {
         value = 10;
+    }
+    if (value > 1000) {
+        value = 1000;
     }
     
     input.value = value;
@@ -204,14 +213,23 @@ function setupEventListeners() {
     // Start game button
     document.getElementById('startButton').addEventListener('click', startGame);
     
-    // Board size input - validate and round on blur (when user clicks away or presses enter)
+    // Board size input
     const boardSizeInput = document.getElementById('boardSizeSelect');
     
+    // Prevent non-numeric input
+    boardSizeInput.addEventListener('keypress', function(e) {
+        // Only allow numbers
+        if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+    
+    // Validate and round on blur (when user clicks away)
     boardSizeInput.addEventListener('blur', function() {
         validateBoardSize(this);
     });
     
-    // Also validate on Enter key
+    // Validate and round on Enter key
     boardSizeInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             validateBoardSize(this);
