@@ -53,8 +53,8 @@ export function initializeState() {
             vibe_icyhot: 10,
             vibe_icewater: 10,
             anal_vibe: 10,
-            ce: 50,
-            pf: 50
+            ce: 10,
+            pf: 10
         },
         finalChallengeDifficulties: {
             stroking: 'medium',
@@ -174,8 +174,8 @@ export function resetGameState() {
         vibe_icyhot: 10,
         vibe_icewater: 10,
         anal_vibe: 10,
-        ce: 50,
-        pf: 50
+        ce: 10,
+        pf: 10
     };
     
     // Reset body part state
