@@ -374,19 +374,8 @@ function createToyLibraryItem(toyId, toyData) {
     checkbox.addEventListener('change', () => {
         window.GAME_STATE.toyChecked[toyId] = checkbox.checked;
         
-        // If unchecking, reset all set-related values for this toy
-        if (!checkbox.checked) {
-            toyData.sets.forEach(setInfo => {
-                const toyKey = `${setInfo.setId}_${toyId}`;
-                // Uncheck the set
-                window.GAME_STATE.toySetEnabled[toyKey] = false;
-                // Reset add/remove chances to 0
-                if (window.GAME_STATE.toyModifiers[toyKey]) {
-                    window.GAME_STATE.toyModifiers[toyKey].addChance = 0;
-                    window.GAME_STATE.toyModifiers[toyKey].removeChance = 0;
-                }
-            });
-        }
+        // Don't reset values, just grey out/ungrey controls
+        // The game logic will treat unchecked toys as 0/unselected
         
         updateToyEnabledStates(toyId, toyData, item);
         updateContinuousTaskProbabilities();
@@ -706,26 +695,29 @@ function updateToyEnabledStates(toyId, toyData, itemElement) {
     toyData.sets.forEach(setInfo => {
         const toyKey = `${setInfo.setId}_${toyId}`;
         
-        // Update set checkbox
+        // Update set checkbox - keep it checked, just disable/grey it
         const setCheckbox = itemElement.querySelector(`.set-checkbox-${toyKey}`);
         if (setCheckbox) {
             setCheckbox.disabled = !isChecked;
             setCheckbox.style.opacity = isChecked ? '1' : '0.5';
         }
         
+        // When re-enabling toy, restore controls based on set checkbox state
+        const setEnabled = window.GAME_STATE.toySetEnabled[toyKey];
+        
         // Update difficulty select
         const diffSelect = itemElement.querySelector(`.difficulty-select-${toyKey}`);
         if (diffSelect) {
-            diffSelect.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey];
-            diffSelect.style.opacity = (isChecked && window.GAME_STATE.toySetEnabled[toyKey]) ? '1' : '0.5';
+            diffSelect.disabled = !isChecked || !setEnabled;
+            diffSelect.style.opacity = (isChecked && setEnabled) ? '1' : '0.5';
         }
         
         // Update gear button
         const gearBtn = itemElement.querySelector('.gear-btn');
         if (gearBtn) {
             const isWearable = window.isToyWearable ? window.isToyWearable(toyId) : false;
-            gearBtn.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey] || !isWearable;
-            gearBtn.style.opacity = (isChecked && window.GAME_STATE.toySetEnabled[toyKey] && isWearable) ? '1' : '0.5';
+            gearBtn.disabled = !isChecked || !setEnabled || !isWearable;
+            gearBtn.style.opacity = (isChecked && setEnabled && isWearable) ? '1' : '0.5';
         }
         
         // Update add/remove inputs
@@ -733,21 +725,13 @@ function updateToyEnabledStates(toyId, toyData, itemElement) {
         const removeInput = itemElement.querySelector(`.remove-input-${toyKey}`);
         
         if (addInput) {
-            addInput.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey] || (toyId === 'cage' && window.GAME_STATE.cageLocked);
-            addInput.style.opacity = (isChecked && window.GAME_STATE.toySetEnabled[toyKey] && !(toyId === 'cage' && window.GAME_STATE.cageLocked)) ? '1' : '0.5';
-            // If unchecking toy, set value to 0
-            if (!isChecked) {
-                addInput.value = 0;
-            }
+            addInput.disabled = !isChecked || !setEnabled || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+            addInput.style.opacity = (isChecked && setEnabled && !(toyId === 'cage' && window.GAME_STATE.cageLocked)) ? '1' : '0.5';
         }
         
         if (removeInput) {
-            removeInput.disabled = !isChecked || !window.GAME_STATE.toySetEnabled[toyKey] || (toyId === 'cage' && window.GAME_STATE.cageLocked);
-            removeInput.style.opacity = (isChecked && window.GAME_STATE.toySetEnabled[toyKey] && !(toyId === 'cage' && window.GAME_STATE.cageLocked)) ? '1' : '0.5';
-            // If unchecking toy, set value to 0
-            if (!isChecked) {
-                removeInput.value = 0;
-            }
+            removeInput.disabled = !isChecked || !setEnabled || (toyId === 'cage' && window.GAME_STATE.cageLocked);
+            removeInput.style.opacity = (isChecked && setEnabled && !(toyId === 'cage' && window.GAME_STATE.cageLocked)) ? '1' : '0.5';
         }
     });
 }
@@ -850,6 +834,12 @@ function updateContinuousTaskProbabilities() {
         const toyKey = `${toyObj.setId}_${toyObj.toyId}`;
         const toyId = toyObj.toyId;
         
+        // IMPORTANT: Treat unchecked toys as having 0% add/remove chance
+        // even if they have values stored in the state
+        if (!window.GAME_STATE.toyChecked[toyId]) {
+            return; // Skip this toy entirely
+        }
+        
         // Check if toy has add/remove tasks (simplified check)
         const hasAddTask = true; // TODO: Check actual task definitions
         const hasRemoveTask = true; // TODO: Check actual task definitions
@@ -898,6 +888,8 @@ function getSelectedToys() {
             const [setId, ...toyIdParts] = toyKey.split('_');
             const toyId = toyIdParts.join('_');
             
+            // IMPORTANT: Treat unchecked toys as unselected, even if toySetEnabled is true
+            // This ensures greyed-out toys don't participate in the game
             if (window.GAME_STATE.toyChecked[toyId] && 
                 window.GAME_STATE.toySetEnabled[toyKey] && 
                 window.GAME_STATE.selectedSets.includes(setId)) {
