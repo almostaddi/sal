@@ -52,7 +52,9 @@ export function initializeState() {
             stroking_2finger: 10,
             vibe_icyhot: 10,
             vibe_icewater: 10,
-            anal_vibe: 10
+            anal_vibe: 10,
+            ce: 50,
+            pf: 50
         },
         finalChallengeDifficulties: {
             stroking: 'medium',
@@ -163,6 +165,18 @@ export function resetGameState() {
     window.GAME_STATE.currentInstruction = '';
     window.GAME_STATE.diceResultText = 'Dice: -';
     window.GAME_STATE.pendingSnakeLadder = null;
+    window.GAME_STATE.finalChallengeModifierChances = {
+        stroking_icyhot: 10,
+        stroking_icewater: 10,
+        stroking_ktb: 10,
+        stroking_ballsqueeze: 10,
+        stroking_2finger: 10,
+        vibe_icyhot: 10,
+        vibe_icewater: 10,
+        anal_vibe: 10,
+        ce: 50,
+        pf: 50
+    };
     
     // Reset body part state
     window.GAME_STATE.bodyPartState = {
