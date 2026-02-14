@@ -66,6 +66,9 @@ export function initializeState() {
             pf: false
         },
         totalSquares: 100,
+        snakesLaddersMode: 'classic', // NEW: classic, random, or custom
+        customSnakes: {}, // NEW: custom snakes object
+        customLadders: {}, // NEW: custom ladders object
         currentInstruction: '', // Save current task HTML for restoration
         diceResultText: 'Dice: -',
         pendingSnakeLadder: null,
@@ -195,6 +198,9 @@ export function resetGameState() {
     window.GAME_STATE.diceResultText = 'Dice: -';
     window.GAME_STATE.pendingSnakeLadder = null;
     window.GAME_STATE.totalSquares = 100;
+    window.GAME_STATE.snakesLaddersMode = 'classic';
+    window.GAME_STATE.customSnakes = {};
+    window.GAME_STATE.customLadders = {};
     window.GAME_STATE.prizeSettings = { full: 33, ruin: 33, denied: 34 };
     window.GAME_STATE.finalChallengeSettings = { stroking: 33, vibe: 33, anal: 34 };
     window.GAME_STATE.finalChallengeTypes = {
