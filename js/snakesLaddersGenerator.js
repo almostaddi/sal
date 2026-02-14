@@ -31,8 +31,8 @@ export function generateRandomSnakesAndLadders(totalSquares) {
             const fromRow = Math.floor((from - 1) / 10);
             const toRow = Math.floor((to - 1) / 10);
             
-            if (to < 1 || usedSquares.has(from) || usedSquares.has(to) || 
-                snakes[from] || ladders[from] || snakes[to] || ladders[to] ||
+            // UPDATED: Check that neither from nor to are already used as ANY special square
+            if (to < 1 || usedSquares.has(from) || usedSquares.has(to) ||
                 specialsPerRow[fromRow] >= 3) {
                 snakeAttempts++;
                 continue;
@@ -66,8 +66,8 @@ export function generateRandomSnakesAndLadders(totalSquares) {
             const fromRow = Math.floor((from - 1) / 10);
             const toRow = Math.floor((to - 1) / 10);
             
-            if (to > totalSquares || usedSquares.has(from) || usedSquares.has(to) || 
-                snakes[from] || ladders[from] || snakes[to] || ladders[to] ||
+            // UPDATED: Check that neither from nor to are already used as ANY special square
+            if (to > totalSquares || usedSquares.has(from) || usedSquares.has(to) ||
                 specialsPerRow[fromRow] >= 3) {
                 ladderAttempts++;
                 continue;
@@ -114,7 +114,9 @@ export function parseCustomSnakesLadders(text) {
 // Validate custom snakes/ladders
 export function validateCustomSnakesLadders(snakes, ladders, totalSquares) {
     const errors = [];
-    const usedSquares = new Set();
+    const allFromSquares = new Set();
+    const allToSquares = new Set();
+    const allUsedSquares = new Set();
     
     // Check snakes
     for (const [from, to] of Object.entries(snakes)) {
@@ -130,12 +132,20 @@ export function validateCustomSnakesLadders(snakes, ladders, totalSquares) {
         if (toNum >= fromNum) {
             errors.push(`Snake ${fromNum}→${toNum} must go down, not up`);
         }
-        if (usedSquares.has(fromNum)) {
-            errors.push(`Square ${fromNum} is used multiple times`);
+        if (allFromSquares.has(fromNum)) {
+            errors.push(`Square ${fromNum} is used as the start of multiple specials`);
+        }
+        if (allUsedSquares.has(fromNum)) {
+            errors.push(`Square ${fromNum} cannot be both a destination and a start`);
+        }
+        if (allUsedSquares.has(toNum)) {
+            errors.push(`Square ${toNum} is used multiple times`);
         }
         
-        usedSquares.add(fromNum);
-        usedSquares.add(toNum);
+        allFromSquares.add(fromNum);
+        allToSquares.add(toNum);
+        allUsedSquares.add(fromNum);
+        allUsedSquares.add(toNum);
     }
     
     // Check ladders
@@ -152,12 +162,20 @@ export function validateCustomSnakesLadders(snakes, ladders, totalSquares) {
         if (toNum <= fromNum) {
             errors.push(`Ladder ${fromNum}→${toNum} must go up, not down`);
         }
-        if (usedSquares.has(fromNum)) {
-            errors.push(`Square ${fromNum} is used multiple times`);
+        if (allFromSquares.has(fromNum)) {
+            errors.push(`Square ${fromNum} is used as the start of multiple specials`);
+        }
+        if (allUsedSquares.has(fromNum)) {
+            errors.push(`Square ${fromNum} cannot be both a destination and a start`);
+        }
+        if (allUsedSquares.has(toNum)) {
+            errors.push(`Square ${toNum} is used multiple times`);
         }
         
-        usedSquares.add(fromNum);
-        usedSquares.add(toNum);
+        allFromSquares.add(fromNum);
+        allToSquares.add(toNum);
+        allUsedSquares.add(fromNum);
+        allUsedSquares.add(toNum);
     }
     
     return errors;
