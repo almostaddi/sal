@@ -239,27 +239,30 @@ export function renderToyLibrary() {
         teaseanddenial: '🎯'
     };
     
-    let allToys = {};
+    // Start with empty object for toys
+    const regularToys = {};
     
-    // Collect toys from selected sets FIRST
+    // Collect toys from selected sets FIRST (excluding cage)
     selectedSets.forEach(setId => {
         if (instructionSets[setId]) {
             instructionSets[setId].toys.forEach(toy => {
+                console.log(`Checking toy: ${toy.id} from set ${setId}`);
                 if (toy.id === 'cage') {
                     // Skip cage - we'll handle it separately
+                    console.log('Skipping cage from set');
                     return;
                 } else {
                     // Regular toy - create if doesn't exist
-                    if (!allToys[toy.id]) {
-                        allToys[toy.id] = {
+                    if (!regularToys[toy.id]) {
+                        regularToys[toy.id] = {
                             id: toy.id,
                             name: toy.name,
                             sets: []
                         };
                     }
                     // Add set if not already added
-                    if (!allToys[toy.id].sets.some(s => s.setId === setId)) {
-                        allToys[toy.id].sets.push({
+                    if (!regularToys[toy.id].sets.some(s => s.setId === setId)) {
+                        regularToys[toy.id].sets.push({
                             setId,
                             setName: instructionSets[setId].name,
                             emoji: setEmojis[setId] || ''
@@ -269,6 +272,8 @@ export function renderToyLibrary() {
             });
         }
     });
+    
+    console.log('Regular toys (should not include cage):', Object.keys(regularToys));
     
     // NOW create the cage toy with sets from selected instruction sets
     const cageSets = [];
@@ -294,8 +299,11 @@ export function renderToyLibrary() {
         alwaysVisible: true
     };
     
-    // Put cage first in allToys
-    allToys = { cage: cageToy, ...allToys };
+    // Combine cage first, then other toys
+    const allToys = { cage: cageToy, ...regularToys };
+    
+    console.log('All toys:', Object.keys(allToys));
+    console.log('Cage toy:', allToys.cage);
     
     // Initialize toy state
     for (const [toyId, toyData] of Object.entries(allToys)) {
