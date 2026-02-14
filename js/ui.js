@@ -270,30 +270,41 @@ export function renderToyLibrary() {
         teaseanddenial: '🎯'
     };
     
-    // Start with empty object for toys
-    const regularToys = {};
+    const allToys = {};
     
-    // Collect toys from selected sets FIRST (excluding cage)
+    // ALWAYS show cage toy first (even with no sets selected)
+    allToys['cage'] = {
+        id: 'cage',
+        name: 'Cage 🔒',
+        sets: [],
+        alwaysVisible: true
+    };
+    
+    // Collect toys from selected sets
     selectedSets.forEach(setId => {
         if (instructionSets[setId]) {
             instructionSets[setId].toys.forEach(toy => {
-                console.log(`Checking toy: ${toy.id} from set ${setId}`);
                 if (toy.id === 'cage') {
-                    // Skip cage - we'll handle it separately
-                    console.log('Skipping cage from set');
-                    return;
+                    // Add this set to the existing cage toy (don't create a new one)
+                    if (!allToys['cage'].sets.some(s => s.setId === setId)) {
+                        allToys['cage'].sets.push({
+                            setId,
+                            setName: instructionSets[setId].name,
+                            emoji: setEmojis[setId] || ''
+                        });
+                    }
                 } else {
                     // Regular toy - create if doesn't exist
-                    if (!regularToys[toy.id]) {
-                        regularToys[toy.id] = {
+                    if (!allToys[toy.id]) {
+                        allToys[toy.id] = {
                             id: toy.id,
                             name: toy.name,
                             sets: []
                         };
                     }
                     // Add set if not already added
-                    if (!regularToys[toy.id].sets.some(s => s.setId === setId)) {
-                        regularToys[toy.id].sets.push({
+                    if (!allToys[toy.id].sets.some(s => s.setId === setId)) {
+                        allToys[toy.id].sets.push({
                             setId,
                             setName: instructionSets[setId].name,
                             emoji: setEmojis[setId] || ''
@@ -303,38 +314,6 @@ export function renderToyLibrary() {
             });
         }
     });
-    
-    console.log('Regular toys (should not include cage):', Object.keys(regularToys));
-    
-    // NOW create the cage toy with sets from selected instruction sets
-    const cageSets = [];
-    selectedSets.forEach(setId => {
-        if (instructionSets[setId]) {
-            // Check if this set has cage
-            const hasCage = instructionSets[setId].toys.some(toy => toy.id === 'cage');
-            if (hasCage) {
-                cageSets.push({
-                    setId,
-                    setName: instructionSets[setId].name,
-                    emoji: setEmojis[setId] || ''
-                });
-            }
-        }
-    });
-    
-    // Create a single cage toy at the beginning with all its sets
-    const cageToy = {
-        id: 'cage',
-        name: 'Cage 🔒',
-        sets: cageSets,
-        alwaysVisible: true
-    };
-    
-    // Combine cage first, then other toys
-    const allToys = { cage: cageToy, ...regularToys };
-    
-    console.log('All toys:', Object.keys(allToys));
-    console.log('Cage toy:', allToys.cage);
     
     // Initialize toy state
     for (const [toyId, toyData] of Object.entries(allToys)) {
@@ -361,9 +340,7 @@ export function renderToyLibrary() {
     }
     
     // Render each toy
-    console.log('About to render toys:', Object.keys(allToys));
     for (const [toyId, toyData] of Object.entries(allToys)) {
-        console.log(`Rendering toy: ${toyId}`, toyData);
         const toyItem = createToyLibraryItem(toyId, toyData);
         container.appendChild(toyItem);
     }
