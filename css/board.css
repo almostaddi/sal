@@ -1,7 +1,7 @@
 /* Game container */
 #gameContainer {
     background: transparent;
-    padding: 0;
+    padding: 20px;
     border-radius: 0;
     box-shadow: none;
     max-width: none;
@@ -9,22 +9,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - 120px); /* Account for title height */
-    gap: 20px; /* Equal spacing between elements */
 }
 
-/* Board wrapper - contains the scaled board */
+/* Board */
 #board {
     display: flex;
     flex-direction: column;
     gap: 2px;
     align-items: flex-start;
+    margin: 20px auto; /* Fixed margin top and bottom */
     box-shadow: none;
-    transform-origin: center center;
+    transform-origin: top center;
     transition: transform 0.3s ease;
     background: transparent;
-    /* No margin - spacing handled by parent gap */
 }
 
 /* Board rows */
@@ -266,8 +263,9 @@
     flex-direction: column;
     align-items: center;
     gap: 15px;
+    margin-bottom: 20px;
+    margin-top: 20px;
     text-align: center;
-    /* No margin - spacing handled by parent gap */
 }
 
 #controls > div:first-child {
@@ -275,6 +273,7 @@
     gap: 10px;
     align-items: center;
     justify-content: center;
+    margin-bottom: 15px;
 }
 
 #controls > div:last-child {
@@ -333,7 +332,6 @@
 @media (max-width: 600px) {
     #gameContainer {
         padding: 10px;
-        gap: 10px;
     }
 
     .square {
