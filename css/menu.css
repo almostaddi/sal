@@ -308,11 +308,9 @@ select {
 
 .set-difficulty-item {
     padding: 4px 0;
-    border-bottom: 1px solid #e9ecef;
 }
 
 .set-difficulty-item:last-child {
-    border-bottom: none;
 }
 
 .difficulty-row {
@@ -497,9 +495,8 @@ input[type="range"]::-moz-range-thumb {
 
 /* Final challenge types section */
 .settings-section > div {
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 2px solid #e9ecef;
+    margin-top: 15px;
+    padding-top: 0;
 }
 
 .settings-section > div > div {
@@ -581,9 +578,8 @@ input[type="range"]::-moz-range-thumb {
 
 /* Modifiers section */
 .settings-section > div > div:last-child {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #e9ecef;
+    margin-top: 15px;
+    padding-top: 0;
 }
 
 .settings-section > div > div:last-child > div:first-child {
