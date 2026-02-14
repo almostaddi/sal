@@ -1,6 +1,7 @@
 // Task selection logic - manifest is source of truth for requirements
 
-import { getTaskConditions } from '../state/gameState.js';
+import { getTaskConditions, hasRegularToys } from '../state/gameState.js';
+import { getClothesPegMax } from '../data/instructionSets.js';
 
 let taskRegistry = null;
 let manifestMetadata = null;
@@ -268,26 +269,57 @@ function getHoldingToys() {
 
 // Check if task metadata meets basic requirements
 function meetsBasicRequirements(taskMeta, availableToys, freeBodyParts, holdingToys) {
-    const requires = taskMeta.requires || { toys: [], freeBodyParts: [], notHolding: [] };
+    const requires = taskMeta.requires || { toys: [], freeBodyParts: [], notHolding: [], bodyPartCapacity: [] };
+    const conditions = getTaskConditions();
     
-    // Check required toys with quantities
+    // Check required toys with quantities (inventory check only)
     if (requires.toys && requires.toys.length > 0) {
         for (const toyReq of requires.toys) {
             const toyId = toyReq.toy;
             const quantity = toyReq.quantity || 1;
-            
-            // Check if toy exists and has enough quantity available
             const available = availableToys[toyId] || 0;
+            
             if (available < quantity) {
                 return false;
             }
         }
     }
     
-    // Check free body parts needed
+    // Check body part capacity requirements (for stackable toys like pegs)
+    if (requires.bodyPartCapacity && requires.bodyPartCapacity.length > 0) {
+        for (const capacityReq of requires.bodyPartCapacity) {
+            const bodyPart = capacityReq.bodyPart;
+            const toyId = capacityReq.toy;
+            const spaceNeeded = capacityReq.spaceNeeded || 1;
+            
+            // Get max capacity for this body part
+            const maxCount = getClothesPegMax(bodyPart);
+            
+            // Get current count in body part
+            const currentCount = conditions.countToyInBodyPart(toyId, bodyPart);
+            
+            // Get available space in body part
+            const spaceAvailable = maxCount - currentCount;
+            
+            // Check if there's enough space
+            if (spaceAvailable < spaceNeeded) {
+                return false;
+            }
+            
+            // Also check that body part doesn't have regular toys (if this is pegs)
+            if (toyId === 'pegs' && hasRegularToys(bodyPart)) {
+                return false;
+            }
+        }
+    }
+    
+    // Check free body parts needed (for non-stackable toys)
     if (requires.freeBodyParts && requires.freeBodyParts.length > 0) {
-        if (!requires.freeBodyParts.every(bp => freeBodyParts.includes(bp))) {
-            return false;
+        for (const bp of requires.freeBodyParts) {
+            // Body part must be completely empty
+            if (!freeBodyParts.includes(bp)) {
+                return false;
+            }
         }
     }
     
