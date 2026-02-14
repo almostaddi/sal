@@ -1,4 +1,4 @@
-// Board rendering and layout - using inline transforms for dynamic alignment
+// Board rendering and layout - with improved scaling and positioning
 export class BoardRenderer {
     constructor(boardSize = 100) {
         this.boardElement = document.getElementById('board');
@@ -154,28 +154,43 @@ export class BoardRenderer {
     scale() {
         // Reset scale to get natural dimensions
         this.boardElement.style.transform = 'scale(1)';
-        this.boardElement.style.transformOrigin = 'top center';
+        this.boardElement.style.transformOrigin = 'center center';
         
         const boardWidth = this.boardElement.scrollWidth;
         const boardHeight = this.boardElement.scrollHeight;
         
         // Get available space
         const windowWidth = window.innerWidth - 40; // 20px padding on each side
-        const windowHeight = window.innerHeight - 200; // Space for controls/buttons
+        
+        // Account for title (h1), controls, and padding
+        // Title: ~100px, Controls: ~150px, Padding/margins: ~100px
+        const reservedHeight = 350;
+        const windowHeight = window.innerHeight - reservedHeight;
         
         // Calculate scale factors
         const scaleX = windowWidth / boardWidth;
         const scaleY = windowHeight / boardHeight;
         
-        // Use smaller scale to fit both dimensions
-        const minScale = 0.5; // Never go below 50%
+        // Prioritize width fitting, allow vertical scroll if needed
+        // Use the smaller of scaleX or scaleY, but don't scale up beyond 100%
+        const minScale = 0.3; // Never go below 30%
         const maxScale = 1.0; // Never go above 100%
-        const scale = Math.max(
-            Math.min(scaleX, Math.max(scaleY, windowHeight / boardHeight * 1.5), maxScale), 
-            minScale
-        );
         
-        // Apply scale
+        let scale;
+        if (boardHeight * scaleX <= windowHeight) {
+            // Board fits vertically when scaled to width
+            scale = Math.min(scaleX, maxScale);
+        } else {
+            // Board is too tall even when scaled to width
+            // Use the smaller scale to fit everything
+            scale = Math.min(scaleX, scaleY, maxScale);
+        }
+        
+        // Apply minimum scale
+        scale = Math.max(scale, minScale);
+        
+        // Apply scale with center origin
         this.boardElement.style.transform = `scale(${scale})`;
+        this.boardElement.style.transformOrigin = 'center center';
     }
 }
