@@ -239,7 +239,7 @@ export function renderToyLibrary() {
         teaseanddenial: '🎯'
     };
     
-    const allToys = {};
+    let allToys = {};
     
     // Collect toys from selected sets FIRST
     selectedSets.forEach(setId => {
