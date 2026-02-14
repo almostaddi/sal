@@ -1,4 +1,4 @@
-// Task selection logic with manifest-based pre-filtering
+// Task selection logic - manifest is source of truth for requirements
 
 import { getTaskConditions } from '../state/gameState.js';
 
@@ -24,38 +24,38 @@ export async function loadTaskRegistry() {
                 general: null
             },
             metadata: {
-                // Store manifest metadata for fast filtering
                 bySet: {},
-                byToy: {}
+                byToy: {},
+                byId: {}  // Quick lookup by task ID
             }
         };
         
         manifestMetadata = taskRegistry.metadata;
         
-        // Load each task file from manifest
+        // Load each category from manifest
         for (const [category, categoryData] of Object.entries(manifest)) {
             // Handle fallbacks
             if (category === '_fallbacks') {
-                for (const filePath of categoryData) {
-                    const taskDef = await loadTaskDefinition(filePath);
+                for (const fallbackEntry of categoryData) {
+                    const taskDef = await loadTaskDefinition(fallbackEntry.file);
                     
                     if (!taskDef) {
-                        console.warn(`⚠️ Failed to load: ${filePath}`);
+                        console.warn(`⚠️ Failed to load: ${fallbackEntry.file}`);
                         continue;
                     }
                     
                     if (taskDef.type === 'snake' && taskDef.isFallback) {
-                        taskRegistry.fallbacks.snake = { ...taskDef, filePath };
-                        console.log(`✅ Loaded snake fallback: ${filePath}`);
+                        taskRegistry.fallbacks.snake = { ...taskDef, filePath: fallbackEntry.file };
+                        console.log(`✅ Loaded snake fallback`);
                     } else if (taskDef.type === 'ladder' && taskDef.isFallback) {
-                        taskRegistry.fallbacks.ladder = { ...taskDef, filePath };
-                        console.log(`✅ Loaded ladder fallback: ${filePath}`);
+                        taskRegistry.fallbacks.ladder = { ...taskDef, filePath: fallbackEntry.file };
+                        console.log(`✅ Loaded ladder fallback`);
                     } else if (taskDef.type === 'final') {
-                        taskRegistry.fallbacks.final = { ...taskDef, filePath };
-                        console.log(`✅ Loaded final fallback: ${filePath}`);
+                        taskRegistry.fallbacks.final = { ...taskDef, filePath: fallbackEntry.file };
+                        console.log(`✅ Loaded final fallback`);
                     } else if (taskDef.type === 'general-fallback') {
-                        taskRegistry.fallbacks.general = { ...taskDef, filePath };
-                        console.log(`✅ Loaded general fallback: ${filePath}`);
+                        taskRegistry.fallbacks.general = { ...taskDef, filePath: fallbackEntry.file };
+                        console.log(`✅ Loaded general fallback`);
                     }
                 }
             }
@@ -67,42 +67,51 @@ export async function loadTaskRegistry() {
                 }
                 
                 // Load regular tasks
-                if (categoryData.tasks) {
-                    for (const filePath of categoryData.tasks) {
-                        const taskDef = await loadTaskDefinition(filePath);
+                if (categoryData.tasks && Array.isArray(categoryData.tasks)) {
+                    for (const taskEntry of categoryData.tasks) {
+                        const taskDef = await loadTaskDefinition(taskEntry.file);
                         
                         if (!taskDef) {
-                            console.warn(`⚠️ Failed to load: ${filePath}`);
+                            console.warn(`⚠️ Failed to load: ${taskEntry.file}`);
                             continue;
                         }
                         
                         if (taskDef.type === 'snake') {
-                            taskRegistry.sets[category].snakes.push({ ...taskDef, filePath });
-                            console.log(`✅ Loaded: ${filePath}`);
+                            taskRegistry.sets[category].snakes.push({ ...taskDef, filePath: taskEntry.file });
                         } else if (taskDef.type === 'ladder') {
-                            taskRegistry.sets[category].ladders.push({ ...taskDef, filePath });
-                            console.log(`✅ Loaded: ${filePath}`);
+                            taskRegistry.sets[category].ladders.push({ ...taskDef, filePath: taskEntry.file });
                         } else if (taskDef.type === 'final') {
-                            taskRegistry.sets[category].finals.push({ ...taskDef, filePath });
-                            console.log(`✅ Loaded: ${filePath}`);
+                            taskRegistry.sets[category].finals.push({ ...taskDef, filePath: taskEntry.file });
                         } else {
                             // Regular set task - store in registry
-                            const toyId = taskDef.toyId;
+                            const toyId = taskEntry.toyId || taskDef.toyId;
+                            const type = taskEntry.type || taskDef.type || 'standard';
+                            const isFallback = taskEntry.isFallback !== undefined ? taskEntry.isFallback : (taskDef.isFallback || false);
+                            
                             if (!taskRegistry.sets[category].tasks[toyId]) {
                                 taskRegistry.sets[category].tasks[toyId] = [];
                             }
-                            taskRegistry.sets[category].tasks[toyId].push({ ...taskDef, filePath });
+                            taskRegistry.sets[category].tasks[toyId].push({ 
+                                ...taskDef, 
+                                filePath: taskEntry.file,
+                                type: type,
+                                isFallback: isFallback
+                            });
                             
-                            // Store metadata for fast filtering
+                            // Store metadata from manifest (source of truth)
                             const metadata = {
-                                id: taskDef.id,
+                                id: taskEntry.id,
                                 setId: category,
                                 toyId: toyId,
-                                filePath: filePath,
-                                requires: taskDef.requires || {},
-                                baseWeight: taskDef.baseWeight || 1
+                                filePath: taskEntry.file,
+                                type: type,
+                                isFallback: isFallback,
+                                requires: taskEntry.requires || { toys: [], freeBodyParts: [], notHolding: [] },
+                                baseWeight: taskEntry.baseWeight || 1
                             };
+                            
                             manifestMetadata.bySet[category].push(metadata);
+                            manifestMetadata.byId[taskEntry.id] = metadata;
                             
                             // Index by toy as well
                             const toyKey = `${category}_${toyId}`;
@@ -111,72 +120,63 @@ export async function loadTaskRegistry() {
                             }
                             manifestMetadata.byToy[toyKey].push(metadata);
                             
-                            console.log(`✅ Loaded: ${filePath}`);
+                            console.log(`✅ Loaded: ${taskEntry.file} (type: ${type}, fallback: ${isFallback})`);
                         }
                     }
                 }
                 
                 // Load add tasks
-                if (categoryData.add) {
-                    for (const filePath of categoryData.add) {
-                        const taskDef = await loadTaskDefinition(filePath);
+                if (categoryData.add && Array.isArray(categoryData.add)) {
+                    for (const taskEntry of categoryData.add) {
+                        const taskDef = await loadTaskDefinition(taskEntry.file);
                         
                         if (!taskDef) {
-                            console.warn(`⚠️ Failed to load add task: ${filePath}`);
+                            console.warn(`⚠️ Failed to load add task: ${taskEntry.file}`);
                             continue;
                         }
                         
-                        const toyId = taskDef.toyId;
-                        if (!toyId) {
-                            console.warn(`⚠️ Add task missing toyId: ${filePath}`);
-                            continue;
-                        }
-                        
+                        const toyId = taskEntry.toyId || taskDef.toyId;
                         if (!taskRegistry.sets[category].add[toyId]) {
                             taskRegistry.sets[category].add[toyId] = [];
                         }
                         taskRegistry.sets[category].add[toyId].push({ 
                             ...taskDef, 
-                            filePath,
-                            bodyPart: taskDef.bodyPart
+                            filePath: taskEntry.file,
+                            bodyPart: taskEntry.bodyPart || taskDef.bodyPart
                         });
-                        console.log(`✅ Loaded add task: ${filePath} (${toyId} -> ${taskDef.bodyPart})`);
+                        
+                        console.log(`✅ Loaded add task: ${taskEntry.file} (${toyId} -> ${taskEntry.bodyPart})`);
                     }
                 }
                 
                 // Load remove tasks
-                if (categoryData.remove) {
-                    for (const filePath of categoryData.remove) {
-                        const taskDef = await loadTaskDefinition(filePath);
+                if (categoryData.remove && Array.isArray(categoryData.remove)) {
+                    for (const taskEntry of categoryData.remove) {
+                        const taskDef = await loadTaskDefinition(taskEntry.file);
                         
                         if (!taskDef) {
-                            console.warn(`⚠️ Failed to load remove task: ${filePath}`);
+                            console.warn(`⚠️ Failed to load remove task: ${taskEntry.file}`);
                             continue;
                         }
                         
-                        const toyId = taskDef.toyId;
-                        if (!toyId) {
-                            console.warn(`⚠️ Remove task missing toyId: ${filePath}`);
-                            continue;
-                        }
-                        
+                        const toyId = taskEntry.toyId || taskDef.toyId;
                         if (!taskRegistry.sets[category].remove[toyId]) {
                             taskRegistry.sets[category].remove[toyId] = [];
                         }
                         taskRegistry.sets[category].remove[toyId].push({ 
                             ...taskDef, 
-                            filePath,
-                            bodyPart: taskDef.bodyPart
+                            filePath: taskEntry.file,
+                            bodyPart: taskEntry.bodyPart || taskDef.bodyPart
                         });
-                        console.log(`✅ Loaded remove task: ${filePath} (${toyId} -> ${taskDef.bodyPart})`);
+                        
+                        console.log(`✅ Loaded remove task: ${taskEntry.file} (${toyId} -> ${taskEntry.bodyPart})`);
                     }
                 }
             }
         }
         
-        console.log('📋 Task registry loaded:', taskRegistry);
-        console.log('🐍 Snake fallback:', taskRegistry.fallbacks.snake);
-        console.log('🪜 Ladder fallback:', taskRegistry.fallbacks.ladder);
+        console.log('📋 Task registry loaded');
+        console.log('📊 Total tasks:', Object.keys(manifestMetadata.byId).length);
         
         // Expose globally
         window.taskRegistry = taskRegistry;
@@ -199,7 +199,19 @@ async function loadTaskDefinition(filePath) {
     }
 }
 
-// Get available toys (checked and enabled) with quantities
+// Get task by ID
+function getTaskById(taskId) {
+    const metadata = manifestMetadata?.byId[taskId];
+    if (!metadata) return null;
+    
+    // Load from registry
+    const task = taskRegistry.sets[metadata.setId]?.tasks[metadata.toyId]
+        ?.find(t => t.id === taskId);
+    
+    return task || null;
+}
+
+// Get available toys with quantities
 function getAvailableToys() {
     const available = {};
     const selectedSets = window.GAME_STATE.selectedSets;
@@ -232,7 +244,7 @@ function getAvailableToys() {
     return available;
 }
 
-// Get free body parts (can hold toys)
+// Get free body parts
 function getFreeBodyParts() {
     const conditions = getTaskConditions();
     const bodyParts = ['Mo', 'Ba', 'Bu', 'As', 'Ni', 'Ha', 'Bo', 'Pe'];
@@ -251,29 +263,22 @@ function getFreeBodyParts() {
 function getHoldingToys() {
     const conditions = getTaskConditions();
     const allHeld = conditions.getAllHeldItems();
-    return [...new Set(allHeld)]; // Unique toys
+    return [...new Set(allHeld)];
 }
 
 // Check if task metadata meets basic requirements
 function meetsBasicRequirements(taskMeta, availableToys, freeBodyParts, holdingToys) {
-    const requires = taskMeta.requires || {};
+    const requires = taskMeta.requires || { toys: [], freeBodyParts: [], notHolding: [] };
     
     // Check required toys with quantities
     if (requires.toys && requires.toys.length > 0) {
         for (const toyReq of requires.toys) {
-            let toyId, quantity;
-            
-            // Handle both formats: 'tail' or { toy: 'tail', quantity: 2 }
-            if (typeof toyReq === 'string') {
-                toyId = toyReq;
-                quantity = 1; // Default to needing at least 1
-            } else {
-                toyId = toyReq.toy;
-                quantity = toyReq.quantity || 1;
-            }
+            const toyId = toyReq.toy;
+            const quantity = toyReq.quantity || 1;
             
             // Check if toy exists and has enough quantity available
-            if (!availableToys[toyId] || availableToys[toyId] < quantity) {
+            const available = availableToys[toyId] || 0;
+            if (available < quantity) {
                 return false;
             }
         }
@@ -309,15 +314,28 @@ export function selectNextTask() {
     const holdingToys = getHoldingToys();
     const selectedSets = window.GAME_STATE.selectedSets;
     
-    console.log('🎯 Selecting task:', { availableToys, freeBodyParts, holdingToys, selectedSets });
+    console.log('🎯 Selecting task:');
+    console.log('  Available toys:', availableToys);
+    console.log('  Free body parts:', freeBodyParts);
+    console.log('  Holding:', holdingToys);
     
-    // Collect eligible tasks from selected sets
+    // Collect eligible NON-FALLBACK tasks from selected sets
     const eligibleTasks = [];
     
     for (const setId of selectedSets) {
         const setTasks = manifestMetadata.bySet[setId] || [];
         
         for (const taskMeta of setTasks) {
+            // Skip fallback tasks during normal selection
+            if (taskMeta.isFallback) {
+                continue;
+            }
+            
+            // Skip non-standard tasks (snake, ladder, final, etc.)
+            if (taskMeta.type !== 'standard') {
+                continue;
+            }
+            
             // Check if toy/set is enabled
             const toyKey = `${taskMeta.setId}_${taskMeta.toyId}`;
             if (!window.GAME_STATE.toySetEnabled[toyKey]) {
@@ -329,7 +347,7 @@ export function selectNextTask() {
                 continue;
             }
             
-            // Check basic requirements
+            // Check basic requirements from manifest
             if (!meetsBasicRequirements(taskMeta, availableToys, freeBodyParts, holdingToys)) {
                 continue;
             }
@@ -339,23 +357,39 @@ export function selectNextTask() {
         }
     }
     
-    console.log(`✅ Found ${eligibleTasks.length} eligible tasks`);
+    console.log(`✅ Found ${eligibleTasks.length} eligible non-fallback tasks`);
     
-    // If no eligible tasks, use set fallback or general fallback
+    // If no eligible tasks, try set-specific fallbacks
     if (eligibleTasks.length === 0) {
-        console.warn('No eligible tasks found, using fallback');
+        console.warn('No eligible tasks found, trying set fallbacks');
         
-        // Try to find a set-specific fallback
         for (const setId of selectedSets) {
-            const fallbackTasks = taskRegistry.sets[setId]?.tasks['hand'] || [];
-            const fallback = fallbackTasks.find(t => t.id.includes('fallback'));
-            if (fallback) {
-                console.log(`Using ${setId} fallback`);
-                return fallback;
+            const setTasks = manifestMetadata.bySet[setId] || [];
+            
+            for (const taskMeta of setTasks) {
+                // Only look at fallback tasks
+                if (!taskMeta.isFallback || taskMeta.type !== 'standard') {
+                    continue;
+                }
+                
+                // Fallback tasks should always be selectable, but check requirements anyway
+                if (!meetsBasicRequirements(taskMeta, availableToys, freeBodyParts, holdingToys)) {
+                    continue;
+                }
+                
+                // Found a set fallback!
+                const task = taskRegistry.sets[setId]?.tasks[taskMeta.toyId]
+                    ?.find(t => t.id === taskMeta.id);
+                
+                if (task) {
+                    console.log(`Using ${setId} fallback: ${task.id}`);
+                    return task;
+                }
             }
         }
         
-        // Use general fallback
+        // No set fallbacks work, use general fallback
+        console.warn('No set fallbacks available, using general fallback');
         return taskRegistry.fallbacks.general;
     }
     
@@ -448,23 +482,7 @@ export function getRemoveTaskBodyParts(setId, toyId) {
     return Array.from(bodyParts);
 }
 
-// Get add tasks for a specific toy and body part
-export function getAddTasksForBodyPart(setId, toyId, bodyPart) {
-    if (!taskRegistry || !taskRegistry.sets[setId]) return [];
-    if (!taskRegistry.sets[setId].add[toyId]) return [];
-    
-    return taskRegistry.sets[setId].add[toyId].filter(task => task.bodyPart === bodyPart);
-}
-
-// Get remove tasks for a specific toy and body part
-export function getRemoveTasksForBodyPart(setId, toyId, bodyPart) {
-    if (!taskRegistry || !taskRegistry.sets[setId]) return [];
-    if (!taskRegistry.sets[setId].remove[toyId]) return [];
-    
-    return taskRegistry.sets[setId].remove[toyId].filter(task => task.bodyPart === bodyPart);
-}
-
-// Select snake/ladder task (unchanged)
+// Select snake/ladder task
 export function selectSnakeLadderTask(type, fromPos, toPos) {
     const conditions = getTaskConditions();
     const snakeLadderInfo = {
@@ -477,6 +495,7 @@ export function selectSnakeLadderTask(type, fromPos, toPos) {
     const selectedSets = window.GAME_STATE.selectedSets;
     const allTasks = [];
     
+    // Collect set-specific snake/ladder tasks (non-fallback)
     for (const setId of selectedSets) {
         if (!taskRegistry.sets[setId]) continue;
         
@@ -484,20 +503,24 @@ export function selectSnakeLadderTask(type, fromPos, toPos) {
             taskRegistry.sets[setId].snakes : 
             taskRegistry.sets[setId].ladders;
         
-        allTasks.push(...setTasks);
+        // Only add non-fallback tasks
+        allTasks.push(...setTasks.filter(task => !task.isFallback));
     }
     
+    // Filter by conditions
     const availableTasks = allTasks.filter(task => {
         if (task.canSelect && !task.canSelect(conditions)) return false;
         return true;
     });
     
+    // If set-specific tasks available, pick one
     if (availableTasks.length > 0) {
         const taskToUse = availableTasks[Math.floor(Math.random() * availableTasks.length)];
-        console.log(`Using set-specific ${type} task:`, taskToUse);
+        console.log(`Using set-specific ${type} task:`, taskToUse.id);
         return { task: taskToUse, snakeLadderInfo };
     }
     
+    // Otherwise use fallback
     const fallbackTask = type === 'snake' ? 
         taskRegistry.fallbacks.snake : 
         taskRegistry.fallbacks.ladder;
@@ -507,43 +530,54 @@ export function selectSnakeLadderTask(type, fromPos, toPos) {
         return { task: taskRegistry.fallbacks.general, snakeLadderInfo };
     }
     
-    console.log(`Using ${type} fallback task:`, fallbackTask);
+    console.log(`Using ${type} fallback task`);
     return { task: fallbackTask, snakeLadderInfo };
 }
 
-// Select final challenge task (unchanged)
+// Select final challenge task
 export function selectFinalChallenge() {
     const conditions = getTaskConditions();
     const selectedSets = window.GAME_STATE.selectedSets;
     
+    // Collect all set-specific final challenges (non-fallback)
     const allFinalTasks = [];
     for (const setId of selectedSets) {
         if (!taskRegistry.sets[setId]) continue;
-        allFinalTasks.push(...taskRegistry.sets[setId].finals);
+        const nonFallbackFinals = taskRegistry.sets[setId].finals.filter(t => !t.isFallback);
+        allFinalTasks.push(...nonFallbackFinals);
     }
     
+    // Check for "always" final challenges
     const alwaysTasks = allFinalTasks.filter(t => 
         t.alwaysSelect && t.alwaysSelect(conditions)
     );
     
     if (alwaysTasks.length > 0) {
-        return alwaysTasks[Math.floor(Math.random() * alwaysTasks.length)];
+        const selected = alwaysTasks[Math.floor(Math.random() * alwaysTasks.length)];
+        console.log('Using always-select final challenge:', selected.id);
+        return selected;
     }
     
+    // Filter by canSelect
     const availableTasks = allFinalTasks.filter(task => {
         if (task.canSelect && !task.canSelect(conditions)) return false;
         return true;
     });
     
+    // Weighted selection if tasks available
     if (availableTasks.length > 0) {
         const weighted = availableTasks.map(task => ({
             task,
             weight: task.weight || 1
         }));
         
-        return weightedRandomSelect(weighted).task;
+        const selected = weightedRandomSelect(weighted).task;
+        console.log('Using set-specific final challenge:', selected.id);
+        return selected;
     }
     
+    // Use fallback
+    console.log('Using fallback final challenge');
     return taskRegistry.fallbacks.final;
 }
 
@@ -556,5 +590,4 @@ window.hasRemoveTasks = hasRemoveTasks;
 window.hasAddOrRemoveTasks = hasAddOrRemoveTasks;
 window.getAddTaskBodyParts = getAddTaskBodyParts;
 window.getRemoveTaskBodyParts = getRemoveTaskBodyParts;
-window.getAddTasksForBodyPart = getAddTasksForBodyPart;
-window.getRemoveTasksForBodyPart = getRemoveTasksForBodyPart;
+window.getTaskById = getTaskById;
