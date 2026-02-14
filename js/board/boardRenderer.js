@@ -1,4 +1,4 @@
-// Board rendering and layout - scales based on window width only
+// Board rendering and layout - compensates for upward transforms
 export class BoardRenderer {
     constructor(boardSize = 100) {
         this.boardElement = document.getElementById('board');
@@ -13,10 +13,23 @@ export class BoardRenderer {
         this.totalSquares = newSize;
     }
     
+    // Calculate maximum shift amount for the entire board
+    getMaxShiftAmount() {
+        // The highest numbered square has the most shift
+        const maxShift = this.getShiftAmount(this.totalSquares);
+        return maxShift;
+    }
+    
     // Create the board
     create() {
         const totalRows = this.totalSquares / this.boardSize;
         this.boardElement.innerHTML = ''; // Clear existing board
+        
+        // Calculate max shift and add as padding-top to prevent overflow
+        const maxShift = this.getMaxShiftAmount();
+        this.boardElement.style.paddingTop = `${maxShift}px`;
+        
+        console.log(`Board padding-top: ${maxShift}px (compensates for upward transforms)`);
         
         // Generate rows from top to bottom
         for (let row = totalRows - 1; row >= 0; row--) {
