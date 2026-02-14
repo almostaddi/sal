@@ -33,6 +33,14 @@ import { initializeUI, restoreUIState } from './ui.js';
 // Data
 import { INSTRUCTION_SETS } from './data/instructionSets.js';
 
+// Snakes and Ladders
+import { 
+    generateRandomSnakesAndLadders, 
+    parseCustomSnakesLadders, 
+    validateCustomSnakesLadders,
+    formatSnakesLaddersForDisplay
+} from './snakesLaddersGenerator.js';
+
 // Game components
 let boardRenderer;
 let taskRegistryLoaded = false;
@@ -104,9 +112,54 @@ function validateBoardSize(input) {
     // Update game state
     window.GAME_STATE.totalSquares = value;
     
+    // If board size is not 100 and mode is classic, switch to random
+    const classicRadio = document.querySelector('input[name="snakesLaddersMode"][value="classic"]');
+    if (value !== 100 && window.GAME_STATE.snakesLaddersMode === 'classic') {
+        const randomRadio = document.querySelector('input[name="snakesLaddersMode"][value="random"]');
+        randomRadio.checked = true;
+        handleSnakesLaddersModeChange('random');
+    }
+    
+    // Update classic radio state
+    if (classicRadio) {
+        classicRadio.disabled = (value !== 100);
+        const label = classicRadio.parentElement;
+        if (label) {
+            label.style.opacity = value !== 100 ? '0.5' : '1';
+            label.style.cursor = value !== 100 ? 'not-allowed' : 'pointer';
+        }
+    }
+    
     if (boardRenderer && window.GAME_STATE.gameStarted) {
         boardRenderer.updateSize(value);
         boardRenderer.create();
+    }
+    
+    saveGameState();
+}
+
+// Handle snakes and ladders mode change
+function handleSnakesLaddersModeChange(mode) {
+    window.GAME_STATE.snakesLaddersMode = mode;
+    
+    const customInputs = document.getElementById('customSnakesLaddersInputs');
+    const customSnakesInput = document.getElementById('customSnakesInput');
+    const customLaddersInput = document.getElementById('customLaddersInput');
+    
+    if (mode === 'custom') {
+        // Show custom inputs
+        customInputs.style.display = 'block';
+        
+        // Populate with current values if empty
+        if (!customSnakesInput.value && Object.keys(window.GAME_STATE.customSnakes).length > 0) {
+            customSnakesInput.value = formatSnakesLaddersForDisplay(window.GAME_STATE.customSnakes);
+        }
+        if (!customLaddersInput.value && Object.keys(window.GAME_STATE.customLadders).length > 0) {
+            customLaddersInput.value = formatSnakesLaddersForDisplay(window.GAME_STATE.customLadders);
+        }
+    } else {
+        // Hide custom inputs
+        customInputs.style.display = 'none';
     }
     
     saveGameState();
@@ -284,6 +337,24 @@ function setupEventListeners() {
         saveGameState();
     });
     
+    // Snakes and Ladders mode radio buttons
+    document.querySelectorAll('input[name="snakesLaddersMode"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            handleSnakesLaddersModeChange(this.value);
+        });
+    });
+    
+    // Custom snakes and ladders inputs
+    document.getElementById('customSnakesInput').addEventListener('input', function() {
+        window.GAME_STATE.customSnakes = parseCustomSnakesLadders(this.value);
+        saveGameState();
+    });
+    
+    document.getElementById('customLaddersInput').addEventListener('input', function() {
+        window.GAME_STATE.customLadders = parseCustomSnakesLadders(this.value);
+        saveGameState();
+    });
+    
     // Reset button - check which page we're on
     document.getElementById('resetBtn').addEventListener('click', () => {
         const isOnHomePage = document.body.classList.contains('on-home-page');
@@ -371,6 +442,45 @@ function startGame() {
     
     window.GAME_STATE.totalSquares = boardSize;
     boardRenderer.updateSize(boardSize);
+    
+    // Generate or apply snakes and ladders based on mode
+    const mode = window.GAME_STATE.snakesLaddersMode;
+    
+    if (mode === 'classic') {
+        // Use classic snakes and ladders (only for 100-square board)
+        window.BOARD_SNAKES = {16:6, 47:26, 49:11, 56:53, 62:19, 64:60, 87:24, 93:73, 95:75, 98:78};
+        window.BOARD_LADDERS = {1:38, 4:14, 9:31, 21:42, 28:84, 36:44, 51:67, 71:91, 80:99};
+    } else if (mode === 'random') {
+        // Generate random snakes and ladders
+        const generated = generateRandomSnakesAndLadders(boardSize);
+        window.BOARD_SNAKES = generated.snakes;
+        window.BOARD_LADDERS = generated.ladders;
+        console.log('Generated random snakes:', window.BOARD_SNAKES);
+        console.log('Generated random ladders:', window.BOARD_LADDERS);
+    } else if (mode === 'custom') {
+        // Use custom snakes and ladders
+        window.BOARD_SNAKES = { ...window.GAME_STATE.customSnakes };
+        window.BOARD_LADDERS = { ...window.GAME_STATE.customLadders };
+        
+        // Validate custom configuration
+        const errors = validateCustomSnakesLadders(
+            window.BOARD_SNAKES, 
+            window.BOARD_LADDERS, 
+            boardSize
+        );
+        
+        if (errors.length > 0) {
+            alert('⚠️ Custom snakes/ladders have errors:\n\n' + errors.join('\n'));
+            return;
+        }
+        
+        console.log('Using custom snakes:', window.BOARD_SNAKES);
+        console.log('Using custom ladders:', window.BOARD_LADDERS);
+    }
+    
+    // Update board renderer with new snakes/ladders
+    boardRenderer.snakes = window.BOARD_SNAKES;
+    boardRenderer.ladders = window.BOARD_LADDERS;
     
     // Handle cage "start worn" option
     if (window.GAME_STATE.cageWorn && window.GAME_STATE.toyChecked['cage']) {
@@ -706,6 +816,10 @@ function resetSettings() {
 
 // Expose showPage globally for other modules
 window.showPage = showPage;
+
+// Expose snakes/ladders functions globally
+window.handleSnakesLaddersModeChange = handleSnakesLaddersModeChange;
+window.formatSnakesLaddersForDisplay = formatSnakesLaddersForDisplay;
 
 // Expose task display functions globally for compatibility
 window.displayRandomInstruction = async () => {
