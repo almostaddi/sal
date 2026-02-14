@@ -202,6 +202,20 @@ function setupFinalChallengeUI() {
             });
         }
     });
+    
+    // Prize modifier percentage inputs (CE and PF)
+    ['ce', 'pf'].forEach(mod => {
+        const input = document.getElementById(`modifier_${mod}_chance`);
+        if (input) {
+            input.addEventListener('input', function() {
+                let value = parseInt(this.value) || 0;
+                value = Math.max(0, Math.min(100, value));
+                this.value = value;
+                window.GAME_STATE.finalChallengeModifierChances[mod] = value;
+                saveGameState();
+            });
+        }
+    });
 }
 
 // Update final challenge displays
@@ -927,6 +941,18 @@ export function restoreUIState(state) {
     
     // Restore board size
     document.getElementById('boardSizeSelect').value = state.totalSquares;
+    
+    // Restore prize modifier percentage inputs
+    if (state.finalChallengeModifierChances) {
+        if (state.finalChallengeModifierChances.ce !== undefined) {
+            const ceInput = document.getElementById('modifier_ce_chance');
+            if (ceInput) ceInput.value = state.finalChallengeModifierChances.ce;
+        }
+        if (state.finalChallengeModifierChances.pf !== undefined) {
+            const pfInput = document.getElementById('modifier_pf_chance');
+            if (pfInput) pfInput.value = state.finalChallengeModifierChances.pf;
+        }
+    }
     
     isRestoringUI = false;
 }
