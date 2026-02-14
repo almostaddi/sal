@@ -123,6 +123,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load saved game state
     const savedState = loadGameState();
     
+    // PRE-SET SLIDER DISPLAYS BEFORE SHOWING PAGE (prevents flash)
+    if (savedState) {
+        // Prize sliders
+        if (savedState.prizeSettings) {
+            document.getElementById('fullPercent').textContent = savedState.prizeSettings.full.toFixed(1) + '%';
+            document.getElementById('ruinPercent').textContent = savedState.prizeSettings.ruin.toFixed(1) + '%';
+            document.getElementById('deniedPercent').textContent = savedState.prizeSettings.denied.toFixed(1) + '%';
+            document.getElementById('fullSlider').value = savedState.prizeSettings.full;
+            document.getElementById('ruinSlider').value = savedState.prizeSettings.ruin;
+            document.getElementById('deniedSlider').value = savedState.prizeSettings.denied;
+        }
+        
+        // Final challenge sliders
+        if (savedState.finalChallengeSettings) {
+            document.getElementById('strokingPercent').textContent = savedState.finalChallengeSettings.stroking + '%';
+            document.getElementById('vibePercent').textContent = savedState.finalChallengeSettings.vibe + '%';
+            document.getElementById('analPercent').textContent = savedState.finalChallengeSettings.anal + '%';
+            document.getElementById('strokingSlider').value = savedState.finalChallengeSettings.stroking;
+            document.getElementById('vibeSlider').value = savedState.finalChallengeSettings.vibe;
+            document.getElementById('analSlider').value = savedState.finalChallengeSettings.anal;
+        }
+    }
+    
     // Initialize board EARLY (before showing page)
     const initialBoardSize = savedState?.totalSquares || 100;
     boardRenderer = new BoardRenderer(initialBoardSize);
