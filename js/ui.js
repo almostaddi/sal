@@ -241,7 +241,7 @@ export function renderToyLibrary() {
     
     const allToys = {};
     
-    // Always add cage toy first
+    // ALWAYS show cage toy first (even with no sets selected)
     allToys['cage'] = {
         id: 'cage',
         name: 'Cage 🔒',
@@ -254,12 +254,16 @@ export function renderToyLibrary() {
         if (instructionSets[setId]) {
             instructionSets[setId].toys.forEach(toy => {
                 if (toy.id === 'cage') {
-                    allToys['cage'].sets.push({
-                        setId,
-                        setName: instructionSets[setId].name,
-                        emoji: setEmojis[setId] || ''
-                    });
+                    // Add this set to the existing cage toy (don't create a new one)
+                    if (!allToys['cage'].sets.some(s => s.setId === setId)) {
+                        allToys['cage'].sets.push({
+                            setId,
+                            setName: instructionSets[setId].name,
+                            emoji: setEmojis[setId] || ''
+                        });
+                    }
                 } else {
+                    // Regular toy - create if doesn't exist
                     if (!allToys[toy.id]) {
                         allToys[toy.id] = {
                             id: toy.id,
@@ -267,11 +271,14 @@ export function renderToyLibrary() {
                             sets: []
                         };
                     }
-                    allToys[toy.id].sets.push({
-                        setId,
-                        setName: instructionSets[setId].name,
-                        emoji: setEmojis[setId] || ''
-                    });
+                    // Add set if not already added
+                    if (!allToys[toy.id].sets.some(s => s.setId === setId)) {
+                        allToys[toy.id].sets.push({
+                            setId,
+                            setName: instructionSets[setId].name,
+                            emoji: setEmojis[setId] || ''
+                        });
+                    }
                 }
             });
         }
@@ -352,7 +359,7 @@ function createToyLibraryItem(toyId, toyData) {
         item.appendChild(createToyControls(toyId, toyData));
     }
     
-    // Set difficulty section
+    // Set difficulty section (only if sets are available)
     if (toyData.sets.length > 0) {
         item.appendChild(createSetDifficultySection(toyId, toyData));
     }
