@@ -346,10 +346,12 @@ function startGame() {
     document.getElementById('diceResult').textContent = 'Dice: -';
     window.GAME_STATE.diceResultText = 'Dice: -';
     
-    // Set up initial roll dice button handler
+    // ✅ FIX: Reset roll dice button to initial state
     const rollDiceButton = document.getElementById('rollDice');
-    rollDiceButton.onclick = rollDice;
+    rollDiceButton.textContent = '🎲 Roll Dice';
     rollDiceButton.disabled = false;
+    rollDiceButton.onclick = null;
+    rollDiceButton.onclick = rollDice;
     
     // Save state
     saveGameState();
@@ -496,6 +498,13 @@ function resetGame() {
     document.getElementById('turnCounter').textContent = 'Turn: 0';
     document.getElementById('diceResult').textContent = 'Dice: -';
     document.getElementById('testJumpInput').value = '';
+    
+    // ✅ FIX: Reset roll dice button
+    const rollDiceButton = document.getElementById('rollDice');
+    rollDiceButton.textContent = '🎲 Roll Dice';
+    rollDiceButton.disabled = false;
+    rollDiceButton.onclick = null;
+    rollDiceButton.onclick = rollDice;
     
     // Clear instructions
     const instructions = document.getElementById('instructions');
