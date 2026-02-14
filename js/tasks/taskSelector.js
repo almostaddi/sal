@@ -11,10 +11,10 @@ export async function loadTaskRegistry() {
         
         taskRegistry = {
             sets: {
-                dressup: { tasks: {}, snakes: [], ladders: [], finals: [] },
-                apple: { tasks: {}, snakes: [], ladders: [], finals: [] },
-                digging: { tasks: {}, snakes: [], ladders: [], finals: [] },
-                teaseanddenial: { tasks: {}, snakes: [], ladders: [], finals: [] }
+                dressup: { tasks: {}, add: {}, remove: {}, snakes: [], ladders: [], finals: [] },
+                apple: { tasks: {}, add: {}, remove: {}, snakes: [], ladders: [], finals: [] },
+                digging: { tasks: {}, add: {}, remove: {}, snakes: [], ladders: [], finals: [] },
+                teaseanddenial: { tasks: {}, add: {}, remove: {}, snakes: [], ladders: [], finals: [] }
             },
             fallbacks: {
                 snake: null,
@@ -25,17 +25,17 @@ export async function loadTaskRegistry() {
         };
         
         // Load each task file from manifest
-        for (const [category, taskFiles] of Object.entries(manifest)) {
-            for (const filePath of taskFiles) {
-                const taskDef = await loadTaskDefinition(filePath);
-                
-                if (!taskDef) {
-                    console.warn(`⚠️ Failed to load: ${filePath}`);
-                    continue;
-                }
-                
-                // Handle fallbacks
-                if (category === '_fallbacks') {
+        for (const [category, categoryData] of Object.entries(manifest)) {
+            // Handle fallbacks
+            if (category === '_fallbacks') {
+                for (const filePath of categoryData) {
+                    const taskDef = await loadTaskDefinition(filePath);
+                    
+                    if (!taskDef) {
+                        console.warn(`⚠️ Failed to load: ${filePath}`);
+                        continue;
+                    }
+                    
                     if (taskDef.type === 'snake' && taskDef.isFallback) {
                         taskRegistry.fallbacks.snake = { ...taskDef, filePath };
                         console.log(`✅ Loaded snake fallback: ${filePath}`);
@@ -50,25 +50,75 @@ export async function loadTaskRegistry() {
                         console.log(`✅ Loaded general fallback: ${filePath}`);
                     }
                 }
-                // Handle set-specific tasks
-                else if (taskRegistry.sets[category]) {
-                    if (taskDef.type === 'snake') {
-                        taskRegistry.sets[category].snakes.push({ ...taskDef, filePath });
-                        console.log(`✅ Loaded: ${filePath}`);
-                    } else if (taskDef.type === 'ladder') {
-                        taskRegistry.sets[category].ladders.push({ ...taskDef, filePath });
-                        console.log(`✅ Loaded: ${filePath}`);
-                    } else if (taskDef.type === 'final') {
-                        taskRegistry.sets[category].finals.push({ ...taskDef, filePath });
-                        console.log(`✅ Loaded: ${filePath}`);
-                    } else {
-                        // Regular set task
-                        const toyId = taskDef.toyId;
-                        if (!taskRegistry.sets[category].tasks[toyId]) {
-                            taskRegistry.sets[category].tasks[toyId] = [];
+            }
+            // Handle set-specific tasks
+            else if (taskRegistry.sets[category]) {
+                // Load regular tasks
+                if (categoryData.tasks) {
+                    for (const filePath of categoryData.tasks) {
+                        const taskDef = await loadTaskDefinition(filePath);
+                        
+                        if (!taskDef) {
+                            console.warn(`⚠️ Failed to load: ${filePath}`);
+                            continue;
                         }
-                        taskRegistry.sets[category].tasks[toyId].push({ ...taskDef, filePath });
-                        console.log(`✅ Loaded: ${filePath}`);
+                        
+                        if (taskDef.type === 'snake') {
+                            taskRegistry.sets[category].snakes.push({ ...taskDef, filePath });
+                            console.log(`✅ Loaded: ${filePath}`);
+                        } else if (taskDef.type === 'ladder') {
+                            taskRegistry.sets[category].ladders.push({ ...taskDef, filePath });
+                            console.log(`✅ Loaded: ${filePath}`);
+                        } else if (taskDef.type === 'final') {
+                            taskRegistry.sets[category].finals.push({ ...taskDef, filePath });
+                            console.log(`✅ Loaded: ${filePath}`);
+                        } else {
+                            // Regular set task
+                            const toyId = taskDef.toyId;
+                            if (!taskRegistry.sets[category].tasks[toyId]) {
+                                taskRegistry.sets[category].tasks[toyId] = [];
+                            }
+                            taskRegistry.sets[category].tasks[toyId].push({ ...taskDef, filePath });
+                            console.log(`✅ Loaded: ${filePath}`);
+                        }
+                    }
+                }
+                
+                // Load add tasks
+                if (categoryData.add) {
+                    for (const filePath of categoryData.add) {
+                        const taskDef = await loadTaskDefinition(filePath);
+                        
+                        if (!taskDef) {
+                            console.warn(`⚠️ Failed to load add task: ${filePath}`);
+                            continue;
+                        }
+                        
+                        const toyId = taskDef.toyId;
+                        if (!taskRegistry.sets[category].add[toyId]) {
+                            taskRegistry.sets[category].add[toyId] = [];
+                        }
+                        taskRegistry.sets[category].add[toyId].push({ ...taskDef, filePath });
+                        console.log(`✅ Loaded add task: ${filePath}`);
+                    }
+                }
+                
+                // Load remove tasks
+                if (categoryData.remove) {
+                    for (const filePath of categoryData.remove) {
+                        const taskDef = await loadTaskDefinition(filePath);
+                        
+                        if (!taskDef) {
+                            console.warn(`⚠️ Failed to load remove task: ${filePath}`);
+                            continue;
+                        }
+                        
+                        const toyId = taskDef.toyId;
+                        if (!taskRegistry.sets[category].remove[toyId]) {
+                            taskRegistry.sets[category].remove[toyId] = [];
+                        }
+                        taskRegistry.sets[category].remove[toyId].push({ ...taskDef, filePath });
+                        console.log(`✅ Loaded remove task: ${filePath}`);
                     }
                 }
             }
@@ -96,6 +146,23 @@ async function loadTaskDefinition(filePath) {
     }
 }
 
+// Check if a toy/set combo has add tasks
+export function hasAddTasks(setId, toyId) {
+    if (!taskRegistry || !taskRegistry.sets[setId]) return false;
+    return taskRegistry.sets[setId].add[toyId] && taskRegistry.sets[setId].add[toyId].length > 0;
+}
+
+// Check if a toy/set combo has remove tasks
+export function hasRemoveTasks(setId, toyId) {
+    if (!taskRegistry || !taskRegistry.sets[setId]) return false;
+    return taskRegistry.sets[setId].remove[toyId] && taskRegistry.sets[setId].remove[toyId].length > 0;
+}
+
+// Check if a toy/set combo has any add or remove tasks
+export function hasAddOrRemoveTasks(setId, toyId) {
+    return hasAddTasks(setId, toyId) || hasRemoveTasks(setId, toyId);
+}
+
 // Get all tasks for current toy/set context
 function getTasksForCurrentContext() {
     const selectedSets = window.GAME_STATE.selectedSets;
@@ -115,7 +182,7 @@ function getTasksForCurrentContext() {
             const toyKey = `${setId}_${toyId}`;
             if (!toySetEnabled[toyKey]) continue;
             
-            // Filter out add/remove tasks (handled separately)
+            // Filter out add/remove tasks (they're handled separately now)
             const regularTasks = tasks.filter(task => 
                 task.type !== 'add' && task.type !== 'remove'
             );
@@ -320,3 +387,6 @@ function weightedRandomSelect(weightedTasks) {
 window.selectNextTask = selectNextTask;
 window.selectSnakeLadderTask = selectSnakeLadderTask;
 window.selectFinalChallenge = selectFinalChallenge;
+window.hasAddTasks = hasAddTasks;
+window.hasRemoveTasks = hasRemoveTasks;
+window.hasAddOrRemoveTasks = hasAddOrRemoveTasks;
