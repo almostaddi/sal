@@ -34,18 +34,20 @@
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-/* Body - allow unlimited vertical growth */
+/* HTML and Body - must grow with content */
+html {
+    height: auto; /* Allow HTML to grow */
+    min-height: 100%; /* At least viewport height */
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh; /* Minimum height, but can grow */
+    height: auto; /* Allow body to grow with content */
+    min-height: 100vh; /* At least viewport height */
     padding: 20px;
     background: var(--primary-gradient);
+    background-attachment: fixed; /* Keep gradient fixed while scrolling */
     color: var(--text-primary);
-    overflow-x: hidden;
-    overflow-y: auto; /* Allow vertical scrolling */
 }
 
 /* Main heading */
@@ -159,12 +161,10 @@ a:hover {
     display: block;
 }
 
-/* Board page specific - allow unlimited vertical growth */
+/* Board page specific */
 #boardPage {
     display: none;
     width: 100%;
-    padding-top: 0; /* Remove top padding */
-    min-height: auto; /* Don't force minimum height */
 }
 
 #boardPage.active {
@@ -379,9 +379,5 @@ body.show-fixed-buttons #patchNotesBtn {
     
     .close-btn {
         font-size: 24px;
-    }
-    
-    #boardPage {
-        padding-top: 0;
     }
 }
