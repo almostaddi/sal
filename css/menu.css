@@ -428,7 +428,7 @@ select {
 
 /* Sliders - REDUCED WHITESPACE */
 .slider-container {
-    margin: 1.5px 0; /* CHANGED: Cut in half from 3px to 1.5px */
+    margin: 2px 0; /* 
 }
 
 .slider-label {
@@ -499,7 +499,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* Final challenge types section */
 .settings-section > div {
-    margin-top: 10px; /* CHANGED: Reduced from 15px to 10px */
+    margin-top: 5px; /* CHANGED: Reduced from 15px to 10px */
     padding-top: 0;
 }
 
