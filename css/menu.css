@@ -428,15 +428,17 @@ select {
 
 /* Sliders - REDUCED WHITESPACE */
 .slider-container {
-    margin: 5px 0; /* CHANGED: Reduced from 10px to 5px */
+    margin: 3px 0; /* CHANGED: Reduced from 5px to 3px */
 }
 
 .slider-label {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 3px;
+    margin-bottom: 2px; /* CHANGED: Reduced from 3px to 2px */
     color: #333;
     font-weight: bold;
+    font-size: 14px; /* ADDED: Slightly smaller font */
+    line-height: 1.2; /* ADDED: Tighter line height */
 }
 
 .slider-label .percentage {
@@ -449,6 +451,7 @@ input[type="range"] {
     border-radius: 5px;
     outline: none;
     -webkit-appearance: none;
+    margin: 0; /* ADDED: Remove any default margin */
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -495,19 +498,19 @@ input[type="range"]::-moz-range-thumb {
 
 /* Final challenge types section */
 .settings-section > div {
-    margin-top: 15px;
+    margin-top: 10px; /* CHANGED: Reduced from 15px to 10px */
     padding-top: 0;
 }
 
 .settings-section > div > div {
-    margin-bottom: 15px; /* CHANGED: Reduced from 20px to 15px */
+    margin-bottom: 10px; /* CHANGED: Reduced from 15px to 10px */
 }
 
 .settings-section > div > div > div:first-child {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px; /* CHANGED: Reduced from 8px to 6px */
 }
 
 .settings-section > div > div > div:first-child > div:first-child {
