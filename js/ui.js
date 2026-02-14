@@ -822,6 +822,6 @@ export function restoreUIState(state) {
     // Restore board size
     document.getElementById('boardSizeSelect').value = state.totalSquares;
     
-    // Re-render toy library
-    renderToyLibrary();
+    // Toy library will be rendered by the next updateSelectedSets call from checkbox changes
+    // or it's already been rendered by initializeUI
 }
