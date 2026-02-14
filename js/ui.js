@@ -215,14 +215,25 @@ function updateFinalChallengeDisplays() {
 }
 
 // Render toy library
+let isRendering = false;
 export function renderToyLibrary() {
-    console.log('🎨 renderToyLibrary() called');
+    console.log('🎨 renderToyLibrary() called, isRendering:', isRendering);
+    
+    if (isRendering) {
+        console.warn('⚠️ Already rendering, skipping duplicate call');
+        return;
+    }
+    
+    isRendering = true;
     console.trace('Call stack:');
     
     updateSelectedSets();
     
     const container = document.getElementById('toyLibraryContainer');
-    if (!container) return;
+    if (!container) {
+        isRendering = false;
+        return;
+    }
     
     console.log('Container children before clear:', container.children.length);
     
@@ -356,6 +367,9 @@ export function renderToyLibrary() {
     updateContinuousTaskProbabilities();
     
     saveGameState();
+    
+    isRendering = false;
+    console.log('✅ renderToyLibrary() complete');
 }
 
 // Create toy library item
