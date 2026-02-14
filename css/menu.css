@@ -426,9 +426,9 @@ select {
     background: #f8f9fa;
 }
 
-/* Sliders */
+/* Sliders - REDUCED WHITESPACE */
 .slider-container {
-    margin: 10px 0;
+    margin: 5px 0; /* CHANGED: Reduced from 10px to 5px */
 }
 
 .slider-label {
@@ -500,7 +500,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .settings-section > div > div {
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* CHANGED: Reduced from 20px to 15px */
 }
 
 .settings-section > div > div > div:first-child {
