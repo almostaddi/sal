@@ -575,14 +575,14 @@ function createSetDifficultySection(toyId, toyData) {
         diffControls.appendChild(diffSelect);
         
         // Gear button (for add/remove settings)
-        const isWearable = window.isToyWearable ? window.isToyWearable(toyId) : false;
+        const hasAddRemove = window.hasAddOrRemoveTasks ? window.hasAddOrRemoveTasks(setInfo.setId, toyId) : false;
         const gearBtn = document.createElement('button');
         gearBtn.className = 'gear-btn';
         gearBtn.textContent = '⚙️';
-        gearBtn.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey] || !isWearable;
-        gearBtn.title = isWearable ? 'Advanced Settings' : 'This toy cannot be worn/held';
+        gearBtn.disabled = !window.GAME_STATE.toyChecked[toyId] || !window.GAME_STATE.toySetEnabled[toyKey] || !hasAddRemove;
+        gearBtn.title = hasAddRemove ? 'Advanced Settings' : 'This toy has no add/remove tasks';
         
-        if (isWearable) {
+        if (hasAddRemove) {
             gearBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 const advSettings = setItem.querySelector('.advanced-settings');
@@ -603,7 +603,7 @@ function createSetDifficultySection(toyId, toyData) {
         setItem.appendChild(diffRow);
         
         // Advanced settings panel
-        if (isWearable) {
+        if (hasAddRemove) {
             const advSettings = document.createElement('div');
             advSettings.className = 'advanced-settings';
             
@@ -715,9 +715,9 @@ function updateToyEnabledStates(toyId, toyData, itemElement) {
         // Update gear button
         const gearBtn = itemElement.querySelector('.gear-btn');
         if (gearBtn) {
-            const isWearable = window.isToyWearable ? window.isToyWearable(toyId) : false;
-            gearBtn.disabled = !isChecked || !setEnabled || !isWearable;
-            gearBtn.style.opacity = (isChecked && setEnabled && isWearable) ? '1' : '0.5';
+            const hasAddRemove = window.hasAddOrRemoveTasks ? window.hasAddOrRemoveTasks(setInfo.setId, toyId) : false;
+            gearBtn.disabled = !isChecked || !setEnabled || !hasAddRemove;
+            gearBtn.style.opacity = (isChecked && setEnabled && hasAddRemove) ? '1' : '0.5';
         }
         
         // Update add/remove inputs
@@ -751,9 +751,10 @@ function updateToySetControls(toyKey, toyId, setItemElement) {
     // Update gear button
     const gearBtn = setItemElement.querySelector('.gear-btn');
     if (gearBtn) {
-        const isWearable = window.isToyWearable ? window.isToyWearable(toyId) : false;
-        gearBtn.disabled = !isChecked || !isEnabled || !isWearable;
-        gearBtn.style.opacity = (isChecked && isEnabled && isWearable) ? '1' : '0.5';
+        const [setId] = toyKey.split('_');
+        const hasAddRemove = window.hasAddOrRemoveTasks ? window.hasAddOrRemoveTasks(setId, toyId) : false;
+        gearBtn.disabled = !isChecked || !isEnabled || !hasAddRemove;
+        gearBtn.style.opacity = (isChecked && isEnabled && hasAddRemove) ? '1' : '0.5';
     }
     
     // Update add/remove inputs
@@ -840,9 +841,9 @@ function updateContinuousTaskProbabilities() {
             return; // Skip this toy entirely
         }
         
-        // Check if toy has add/remove tasks (simplified check)
-        const hasAddTask = true; // TODO: Check actual task definitions
-        const hasRemoveTask = true; // TODO: Check actual task definitions
+        // Check if toy has add/remove tasks from manifest
+        const hasAddTask = window.hasAddTasks ? window.hasAddTasks(toyObj.setId, toyId) : false;
+        const hasRemoveTask = window.hasRemoveTasks ? window.hasRemoveTasks(toyObj.setId, toyId) : false;
         
         if (hasAddTask) {
             let addChance = window.GAME_STATE.toyModifiers[toyKey]?.addChance ?? 10;
