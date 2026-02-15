@@ -66,14 +66,14 @@ export function initializeState() {
             pf: false
         },
         totalSquares: 100,
-        snakesLaddersMode: 'classic', // NEW: classic, random, or custom
-        customSnakes: {}, // NEW: custom snakes object
-        customLadders: {}, // NEW: custom ladders object
-        randomGenConfig: { // NEW: random generation configuration
-            enableMaxLaddersPerRow: true,
-            maxLaddersPerRow: 1,
-            enableMaxSnakesPerRow: true,
-            maxSnakesPerRow: 1,
+        snakesLaddersMode: 'classic',
+        customSnakes: {},
+        customLadders: {},
+        randomGenConfig: {
+            enableMaxLaddersPerRow: false,  // CHANGED from true
+            maxLaddersPerRow: 2,
+            enableMaxSnakesPerRow: false,   // CHANGED from true
+            maxSnakesPerRow: 2,
             enableMaxAnyPerRow: true,
             maxAnyPerRow: 3,
             enableMaxJump: true,
@@ -89,7 +89,7 @@ export function initializeState() {
             enableNoLaddersRanges: false,
             noLaddersRanges: ''
         },
-        currentInstruction: '', // Save current task HTML for restoration
+        currentInstruction: '',
         diceResultText: 'Dice: -',
         pendingSnakeLadder: null,
         
@@ -222,9 +222,9 @@ export function resetGameState() {
     window.GAME_STATE.customSnakes = {};
     window.GAME_STATE.customLadders = {};
     window.GAME_STATE.randomGenConfig = {
-        enableMaxLaddersPerRow: true,
+        enableMaxLaddersPerRow: false,  // CHANGED from true
         maxLaddersPerRow: 1,
-        enableMaxSnakesPerRow: true,
+        enableMaxSnakesPerRow: false,   // CHANGED from true
         maxSnakesPerRow: 1,
         enableMaxAnyPerRow: true,
         maxAnyPerRow: 3,
