@@ -190,6 +190,20 @@ select {
     font-size: 14px;
 }
 
+/* Override margin for the Random div container */
+input[name="snakesLaddersMode"][value="random"] {
+    margin: 0;
+}
+
+input[name="snakesLaddersMode"][value="random"] ~ * {
+    margin-bottom: 0;
+}
+
+/* Prevent settings-section margin from applying to snakes-ladders */
+.snakes-ladders-options > div {
+    margin-bottom: 0 !important;
+}
+
 /* Player name input */
 #playerNameInput {
     width: 100%;
