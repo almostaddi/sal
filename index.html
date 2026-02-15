@@ -56,24 +56,43 @@
                             <!-- Advanced Random Settings Content - directly after button -->
                             <div id="advancedRandomContent" style="display: none; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 8px; padding: 15px; margin-top: 10px; margin-left: 24px;">
                                 <div style="display: flex; flex-direction: column; gap: 15px;">
+                                    <!-- Generation Targets -->
+                                    <div>
+                                        <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #333;">Generation Targets:</h4>
+                                        <label style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+                                            <span style="font-size: 13px; min-width: 120px; color: #333;">Ladders Per Row:</span>
+                                            <input type="number" id="laddersPerRow" min="0" max="5" value="1" style="width: 50px; padding: 4px; margin: 0;">
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
+                                            <span style="font-size: 13px; min-width: 120px; color: #333;">Snakes Per Row:</span>
+                                            <input type="number" id="snakesPerRow" min="0" max="5" value="1" style="width: 50px; padding: 4px; margin: 0;">
+                                        </label>
+                                        <p style="font-size: 11px; color: #666; margin: 5px 0 0 0; font-style: italic;">
+                                            Max 5 per row to ensure valid moves (10 squares - start/end - reserved destinations)
+                                        </p>
+                                    </div>
+                                    
                                     <!-- Per Row Limits -->
                                     <div>
-                                        <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #333;">Per Row Limits:</h4>
+                                        <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #333;">Per Row Limits (Optional):</h4>
                                         <label style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
                                             <input type="checkbox" id="enableMaxLaddersPerRow" style="margin: 0;">
                                             <span style="font-size: 13px; min-width: 100px; color: #333;">Max Ladders:</span>
-                                            <input type="number" id="maxLaddersPerRow" min="0" max="10" value="1" style="width: 50px; padding: 4px; margin: 0;">
+                                            <input type="number" id="maxLaddersPerRow" min="0" max="5" value="2" style="width: 50px; padding: 4px; margin: 0;">
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
                                             <input type="checkbox" id="enableMaxSnakesPerRow" style="margin: 0;">
                                             <span style="font-size: 13px; min-width: 100px; color: #333;">Max Snakes:</span>
-                                            <input type="number" id="maxSnakesPerRow" min="0" max="10" value="1" style="width: 50px; padding: 4px; margin: 0;">
+                                            <input type="number" id="maxSnakesPerRow" min="0" max="5" value="2" style="width: 50px; padding: 4px; margin: 0;">
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
                                             <input type="checkbox" id="enableMaxAnyPerRow" checked style="margin: 0;">
                                             <span style="font-size: 13px; min-width: 100px; color: #333;">Max Any:</span>
-                                            <input type="number" id="maxAnyPerRow" min="0" max="10" value="3" style="width: 50px; padding: 4px; margin: 0;">
+                                            <input type="number" id="maxAnyPerRow" min="0" max="5" value="3" style="width: 50px; padding: 4px; margin: 0;">
                                         </label>
+                                        <p style="font-size: 11px; color: #666; margin: 5px 0 0 0; font-style: italic;">
+                                            Hard caps - generation stops if these limits are reached
+                                        </p>
                                     </div>
                                     
                                     <!-- Jump/Fall Limits -->
