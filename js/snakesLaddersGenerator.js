@@ -38,10 +38,12 @@ function isInExclusionRanges(square, ranges) {
 export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
     // Default config values
     const cfg = {
+        laddersPerRow: config.laddersPerRow ?? 1,
+        snakesPerRow: config.snakesPerRow ?? 1,
         enableMaxLaddersPerRow: config.enableMaxLaddersPerRow ?? false,
-        maxLaddersPerRow: config.maxLaddersPerRow ?? 1,
+        maxLaddersPerRow: config.maxLaddersPerRow ?? 2,
         enableMaxSnakesPerRow: config.enableMaxSnakesPerRow ?? false,
-        maxSnakesPerRow: config.maxSnakesPerRow ?? 1,
+        maxSnakesPerRow: config.maxSnakesPerRow ?? 2,
         enableMaxAnyPerRow: config.enableMaxAnyPerRow ?? true,
         maxAnyPerRow: config.maxAnyPerRow ?? 3,
         enableMaxJump: config.enableMaxJump ?? true,
@@ -68,13 +70,13 @@ export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
     const usedSquares = new Set([1, totalSquares]); // Reserve start and finish
     
     // Track specials per row
-    const snakesPerRow = Array(numRows).fill(0);
-    const laddersPerRow = Array(numRows).fill(0);
+    const snakesPerRowCount = Array(numRows).fill(0);
+    const laddersPerRowCount = Array(numRows).fill(0);
     const anyPerRow = Array(numRows).fill(0);
     
-    // Determine target number of snakes/ladders per row
-    const targetSnakesPerRow = cfg.enableMaxSnakesPerRow ? cfg.maxSnakesPerRow : 1;
-    const targetLaddersPerRow = cfg.enableMaxLaddersPerRow ? cfg.maxLaddersPerRow : 1;
+    // Use generation targets
+    const targetSnakesPerRow = cfg.snakesPerRow;
+    const targetLaddersPerRow = cfg.laddersPerRow;
     
     // Generate snakes and ladders
     for (let i = 0; i < numRows; i++) {
@@ -117,7 +119,7 @@ export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
                 // Check row limits (most restrictive takes priority)
                 let rowLimitExceeded = false;
                 
-                if (cfg.enableMaxSnakesPerRow && snakesPerRow[fromRow] >= cfg.maxSnakesPerRow) {
+                if (cfg.enableMaxSnakesPerRow && snakesPerRowCount[fromRow] >= cfg.maxSnakesPerRow) {
                     rowLimitExceeded = true;
                 }
                 if (cfg.enableMaxAnyPerRow && anyPerRow[fromRow] >= cfg.maxAnyPerRow) {
@@ -133,7 +135,7 @@ export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
                 snakes[from] = to;
                 usedSquares.add(from);
                 usedSquares.add(to);
-                snakesPerRow[fromRow]++;
+                snakesPerRowCount[fromRow]++;
                 anyPerRow[fromRow]++;
                 if (toRow !== fromRow) anyPerRow[toRow]++;
                 break;
@@ -179,7 +181,7 @@ export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
                 // Check row limits (most restrictive takes priority)
                 let rowLimitExceeded = false;
                 
-                if (cfg.enableMaxLaddersPerRow && laddersPerRow[fromRow] >= cfg.maxLaddersPerRow) {
+                if (cfg.enableMaxLaddersPerRow && laddersPerRowCount[fromRow] >= cfg.maxLaddersPerRow) {
                     rowLimitExceeded = true;
                 }
                 if (cfg.enableMaxAnyPerRow && anyPerRow[fromRow] >= cfg.maxAnyPerRow) {
@@ -195,7 +197,7 @@ export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
                 ladders[from] = to;
                 usedSquares.add(from);
                 usedSquares.add(to);
-                laddersPerRow[fromRow]++;
+                laddersPerRowCount[fromRow]++;
                 anyPerRow[fromRow]++;
                 if (toRow !== fromRow) anyPerRow[toRow]++;
                 break;
