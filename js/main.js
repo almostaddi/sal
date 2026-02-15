@@ -385,8 +385,8 @@ function setupEventListeners() {
     document.getElementById('resetBtn').addEventListener('click', () => {
         const isOnHomePage = document.body.classList.contains('on-home-page');
         if (isOnHomePage) {
-            // On home page - reset settings
-            resetSettings();
+            // On home page - show reset settings modal
+            document.getElementById('resetSettingsModal').classList.add('active');
         } else {
             // On board/task page - show reset game modal
             document.getElementById('resetModal').classList.add('active');
@@ -405,10 +405,19 @@ function setupEventListeners() {
         });
     });
     
-    // Reset modal buttons
+    // Reset game modal buttons
     document.getElementById('confirmReset').addEventListener('click', resetGame);
     document.getElementById('cancelReset').addEventListener('click', () => {
         document.getElementById('resetModal').classList.remove('active');
+    });
+    
+    // Reset settings modal buttons
+    document.getElementById('confirmResetSettings').addEventListener('click', () => {
+        resetSettings();
+        document.getElementById('resetSettingsModal').classList.remove('active');
+    });
+    document.getElementById('cancelResetSettings').addEventListener('click', () => {
+        document.getElementById('resetSettingsModal').classList.remove('active');
     });
     
     // Close modals when clicking outside
