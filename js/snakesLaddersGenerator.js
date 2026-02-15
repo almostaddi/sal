@@ -1,15 +1,21 @@
 // Snakes and Ladders generation logic with difficulty presets
 
 // Difficulty presets
-// Note: Percentages are always rounded appropriately:
-// - Minimums use Math.ceil() to round UP (5% of 10 = 0.5 → 1 square)
-// - Maximums use Math.floor() to round DOWN (50% of 10 = 5.0 → 5 squares)
+// Note: ALL percentages are based on BOARD SIZE for consistency
+// - Minimums use Math.ceil() to round UP (5% of 100 = 5.0 → 5 squares)
+// - Maximums use Math.floor() to round DOWN (50% of 100 = 50.0 → 50 squares)
 // - Math.max(1, ...) ensures at least 1 square movement on tiny boards
+// - Absolute limits ensure snakes don't go below square 1, ladders don't exceed board
+//
+// Examples for 100-square board:
+// Easy: minJump=10 squares, maxJump=50 squares, minFall=5 squares, maxFall=30 squares
+// Medium: minJump=5 squares, maxJump=40 squares, minFall=5 squares, maxFall=40 squares
+// Hard: minJump=5 squares, maxJump=30 squares, minFall=10 squares, maxFall=50 squares
 //
 // Examples for 10-square board:
-// Easy: minJump=1 (10%), maxJump=5 (50%), minFall=1 (5%), maxFall=0-3 (varies by position)
-// Medium: minJump=1 (5%), maxJump=4 (40%), minFall=1 (5%), maxFall=0-4 (varies by position)
-// Hard: minJump=1 (5%), maxJump=3 (30%), minFall=1 (10%), maxFall=0-5 (varies by position)
+// Easy: minJump=1 square, maxJump=5 squares, minFall=1 square, maxFall=3 squares
+// Medium: minJump=1 square, maxJump=4 squares, minFall=1 square, maxFall=4 squares
+// Hard: minJump=1 square, maxJump=3 squares, minFall=1 square, maxFall=5 squares
 const DIFFICULTY_PRESETS = {
     easy: {
         minJumpPercent: 10,
@@ -145,22 +151,25 @@ function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, 
         const fromRow = Math.floor((from - 1) / 10);
         if (anyPerRow[fromRow] >= preset.maxAnyPerRow) continue;
         
-        // Calculate fall range (percentages of "from" position)
-        // Always round UP for minimums to ensure meaningful movement
-        const minFall = Math.max(1, Math.ceil(from * preset.minFallPercent / 100));
-        // Always round DOWN for maximums to stay within bounds
-        const maxFall = Math.max(1, Math.floor(from * preset.maxFallPercent / 100));
+        // Calculate fall range
+        // Both min and max fall are percentages of BOARD SIZE (consistent across all snakes)
+        const minFall = Math.max(1, Math.ceil(totalSquares * preset.minFallPercent / 100));
+        const maxFall = Math.max(1, Math.floor(totalSquares * preset.maxFallPercent / 100));
+        
+        // Limit max fall by position (can't fall below square 1)
+        const absoluteMaxFall = from - 1;
+        const effectiveMaxFall = Math.min(maxFall, absoluteMaxFall);
         
         // Must fall at least minFall
-        if (maxFall < minFall) continue;
+        if (effectiveMaxFall < minFall) continue;
         
         // Pick random fall distance
-        const fall = Math.floor(Math.random() * (maxFall - minFall + 1)) + minFall;
+        const fall = Math.floor(Math.random() * (effectiveMaxFall - minFall + 1)) + minFall;
         let to = from - fall;
         
         // If would go below square 1, adjust
         if (to < 1) {
-            to = Math.max(1, from - maxFall);
+            to = Math.max(1, from - effectiveMaxFall);
             if (to >= from) continue; // Can't create valid snake
         }
         
@@ -184,10 +193,14 @@ function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, 
         const fromRow = Math.floor((from - 1) / 10);
         if (anyPerRow[fromRow] >= preset.maxAnyPerRow) continue;
         
-        const minFall = Math.max(1, Math.ceil(from * preset.minFallPercent / 100));
-        const maxFall = Math.max(1, Math.floor(from * preset.maxFallPercent / 100));
+        const minFall = Math.max(1, Math.ceil(totalSquares * preset.minFallPercent / 100));
+        const maxFall = Math.max(1, Math.floor(totalSquares * preset.maxFallPercent / 100));
         
-        if (maxFall < minFall) {
+        // Limit max fall by position
+        const absoluteMaxFall = from - 1;
+        const effectiveMaxFall = Math.min(maxFall, absoluteMaxFall);
+        
+        if (effectiveMaxFall < minFall) {
             // No viable squares with min fall - pick highest available instead
             const highestFall = from - 1;
             if (highestFall >= 1 && !allUsedSquares.has(highestFall)) {
@@ -196,11 +209,11 @@ function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, 
             continue;
         }
         
-        const fall = Math.floor(Math.random() * (maxFall - minFall + 1)) + minFall;
+        const fall = Math.floor(Math.random() * (effectiveMaxFall - minFall + 1)) + minFall;
         let to = from - fall;
         
         if (to < 1) {
-            to = Math.max(1, from - maxFall);
+            to = Math.max(1, from - effectiveMaxFall);
             if (to >= from) {
                 // Pick highest available
                 to = from - 1;
