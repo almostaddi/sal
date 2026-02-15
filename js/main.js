@@ -175,13 +175,74 @@ function handleSnakesLaddersModeChange(mode) {
     saveGameState();
 }
 
+// Custom task completion handler
+function handleTaskCompletion() {
+    // Clear current instruction when returning to board
+    window.GAME_STATE.currentInstruction = '';
+    
+    // Check what phase we're in
+    if (window.GAME_STATE.gamePhase === 'awaiting_snake_ladder_task') {
+        // Just completed snake/ladder task, move piece immediately
+        const savedPending = window.GAME_STATE.pendingSnakeLadder;
+        
+        // Move player to destination instantly (no animation)
+        setPlayerPosition(savedPending.to);
+        window.GAME_STATE.playerPosition = savedPending.to;
+        
+        const totalSquares = window.GAME_STATE.totalSquares || 100;
+        
+        // Check if final square after snake/ladder
+        if (savedPending.to === totalSquares) {
+            // STATE: Ready for final challenge
+            window.GAME_STATE.gamePhase = 'awaiting_final_challenge';
+            window.GAME_STATE.pendingSnakeLadder = null;
+            saveGameState();
+            
+            showPage('task');
+            window.displayFinalChallenge();
+            return;
+        }
+        
+        // STATE: Waiting to show normal task at destination
+        window.GAME_STATE.gamePhase = 'awaiting_normal_task';
+        window.GAME_STATE.pendingSnakeLadder = null;
+        saveGameState();
+        
+        // Return to board with Continue button
+        showPage('board');
+        const rollDiceButton = document.getElementById('rollDice');
+        rollDiceButton.textContent = '➡️ Continue';
+        rollDiceButton.disabled = false;
+        rollDiceButton.onclick = null;
+        
+        rollDiceButton.onclick = () => {
+            showPage('task');
+            window.displayRandomInstructionWithAddRemove(savedPending.addRemoveTask);
+        };
+    } else {
+        // Completed normal task, ready for next roll
+        // STATE: Ready for dice roll
+        window.GAME_STATE.gamePhase = 'awaiting_dice_roll';
+        window.GAME_STATE.pendingSnakeLadder = null;
+        window.GAME_STATE.pendingAddRemoveTask = null;
+        saveGameState();
+        
+        showPage('board');
+        const rollDiceButton = document.getElementById('rollDice');
+        rollDiceButton.textContent = '🎲 Roll Dice';
+        rollDiceButton.disabled = false;
+        rollDiceButton.onclick = null;
+        rollDiceButton.onclick = rollDice;
+    }
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎲 Snakes and Ladders - Initializing...');
     
     // Initialize state FIRST
     initializeState();
-    initializeGameFunctions(onTaskComplete);
+    initializeGameFunctions(handleTaskCompletion);
     
     // Load saved game state
     const savedState = loadGameState();
@@ -613,65 +674,13 @@ function restoreSavedGame(state) {
                 }
                 
                 rollDiceButton.onclick = () => {
-                    if (destSquare) {
-                        destSquare.classList.remove('snake-destination', 'ladder-destination');
-                    }
+                    // Don't remove highlight yet - keep it until we move
                     showPage('task');
                     window.displaySnakeLadderTask(
                         state.pendingSnakeLadder.type,
                         state.pendingSnakeLadder.from,
                         state.pendingSnakeLadder.to
                     );
-                };
-            }
-        } else if (phase === 'awaiting_snake_ladder_movement') {
-            // Waiting to move piece after snake/ladder task
-            // Button text already set to Continue
-            rollDiceButton.disabled = false;
-            
-            if (state.pendingSnakeLadder) {
-                const savedPending = state.pendingSnakeLadder;
-                
-                rollDiceButton.onclick = () => {
-                    rollDiceButton.disabled = true;
-                    rollDiceButton.onclick = null;
-                    
-                    // Directly animate the movement
-                    animatePlayer(savedPending.from, savedPending.to, () => {
-                        // Update player position
-                        setPlayerPosition(savedPending.to);
-                        window.GAME_STATE.playerPosition = savedPending.to;
-                        
-                        const totalSquares = window.GAME_STATE.totalSquares || 100;
-                        
-                        // Check if final square after snake/ladder
-                        if (savedPending.to === totalSquares) {
-                            // STATE: Ready for final challenge
-                            window.GAME_STATE.gamePhase = 'awaiting_final_challenge';
-                            window.GAME_STATE.pendingSnakeLadder = null;
-                            window.GAME_FUNCTIONS.saveState();
-                            
-                            showPage('task');
-                            window.displayFinalChallenge();
-                            return;
-                        }
-                        
-                        // STATE: Waiting to show normal task at destination
-                        window.GAME_STATE.gamePhase = 'awaiting_normal_task';
-                        window.GAME_STATE.pendingSnakeLadder = null;
-                        window.GAME_FUNCTIONS.saveState();
-                        
-                        // Stay on board, show Continue button for the destination square task
-                        rollDiceButton.textContent = '➡️ Continue';
-                        rollDiceButton.disabled = false;
-                        rollDiceButton.onclick = null;
-                        
-                        // Second continue: show the normal task at destination square
-                        rollDiceButton.onclick = () => {
-                            showPage('task');
-                            window.displayRandomInstructionWithAddRemove(savedPending.addRemoveTask);
-                        };
-                    }, true);
                 };
             }
         } else if (phase === 'awaiting_normal_task') {
