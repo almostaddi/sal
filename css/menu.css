@@ -178,7 +178,7 @@ select {
 
 /* Board size input specific styling */
 #boardSizeSelect {
-    width: 120px;
+    width: 80px;
 }
 
 /* Player name input */
@@ -510,7 +510,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #deniedSlider {
-    background: linear-gradient(to right, #adb5bd, #868e96);
+    background: linear-gradient(to right, #ff6b6b, #ee5a6f);
 }
 
 #strokingSlider {
