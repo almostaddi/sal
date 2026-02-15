@@ -495,6 +495,16 @@ function startGame() {
         return;
     }
     
+    // Get board size - validate it first
+    const boardSizeInput = document.getElementById('boardSizeSelect');
+    validateBoardSize(boardSizeInput);
+    const boardSize = parseInt(boardSizeInput.value);
+    
+    // Set player name and board size
+    window.GAME_STATE.playerName = playerName;
+    window.GAME_STATE.totalSquares = boardSize;
+    boardRenderer.updateSize(boardSize);
+    
     // Generate or apply snakes and ladders based on mode
     const mode = window.GAME_STATE.snakesLaddersMode;
     
