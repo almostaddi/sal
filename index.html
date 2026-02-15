@@ -35,7 +35,7 @@
                     <h3>🎯 Board Customization</h3>
                     <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                         Board Size: 
-                        <input type="number" id="boardSizeSelect" min="10" step="10" value="100" style="width: 120px; margin: 0;">
+                        <input type="number" id="boardSizeSelect" min="10" step="10" value="100" style="width: 80px; margin: 0;">
                     </label>
                     
                     <label>Snakes and Ladders:</label>
@@ -48,7 +48,7 @@
                             <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
                                 <input type="radio" name="snakesLaddersMode" value="random" style="margin: 0; cursor: pointer;">
                                 <span>Random</span>
-                                <select id="snakesLaddersDifficulty" style="margin-left: 10px; padding: 4px 8px; border: 2px solid #667eea; border-radius: 6px; font-size: 14px; cursor: pointer; background: white;">
+                                <select id="snakesLaddersDifficulty" style="margin-left: 10px;">
                                     <option value="easy">😊 Easy</option>
                                     <option value="medium" selected>😐 Medium</option>
                                     <option value="hard">😤 Hard</option>
@@ -122,7 +122,14 @@
                     
                     <!-- Challenge Types -->
                     <div>
-                        <h4>Challenge Types & Difficulty:</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0;">Challenge Types & Difficulty:</h4>
+                            <button id="modifiersToggleBtn" style="padding: 4px 12px; font-size: 12px; background: linear-gradient(to bottom, #ffffff, #f1f3f5); border: 1px solid #adb5bd; border-radius: 6px; color: #495057; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-weight: 600; cursor: pointer;">
+                                👁️ Show Modifiers
+                            </button>
+                        </div>
+                        
+                        <div id="modifiersSection" style="display: none;">
                         
                         <!-- Stroking -->
                         <div>
@@ -241,6 +248,8 @@
                                 </label>
                             </div>
                         </div>
+                        
+                        </div> <!-- End modifiersSection -->
                     </div>
                 </div>
                 
