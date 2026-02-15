@@ -112,7 +112,7 @@ export function rollDice() {
         }
         
         // Stay on board page and show Continue button
-        rollDiceButton.textContent = '➡️ Continue';
+        rollDiceButton.textContent = '🚪 Enter';
         rollDiceButton.disabled = false;
         isRolling = false;
         
@@ -186,7 +186,7 @@ export function onTaskComplete() {
         
         window.showPage('board');
         const rollDiceButton = document.getElementById('rollDice');
-        rollDiceButton.textContent = '➡️ Continue';
+        rollDiceButton.textContent = '🚪 Enter';
         rollDiceButton.disabled = false;
         rollDiceButton.onclick = null;
         
@@ -220,7 +220,7 @@ export function onTaskComplete() {
                 window.GAME_FUNCTIONS.saveState();
                 
                 // Stay on board, show Continue button for the destination square task
-                rollDiceButton.textContent = '➡️ Continue';
+                rollDiceButton.textContent = '🚪 Enter';
                 rollDiceButton.disabled = false;
                 rollDiceButton.onclick = null;
                 
