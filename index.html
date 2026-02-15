@@ -50,7 +50,7 @@
                                 <span>Random</span>
                             </label>
                             <!-- Advanced Random Settings Button - directly under Random -->
-                            <button type="button" id="toggleAdvancedRandom" style="padding: 4px 12px; font-size: 12px; background: var(--info-gradient); margin-left: 24px; margin-top: 5px; display: block;">
+                            <button type="button" id="toggleAdvancedRandom" style="padding: 6px 14px; font-size: 13px; background: linear-gradient(to bottom, #ffffff, #f1f3f5); border: 1px solid #adb5bd; border-radius: 6px; color: #495057; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-weight: 600; text-transform: none; letter-spacing: normal; margin-left: 24px; margin-top: 5px; display: block; cursor: pointer;">
                                 ⚙️ Advanced
                             </button>
                             <!-- Advanced Random Settings Content - directly after button -->
@@ -60,12 +60,12 @@
                                     <div>
                                         <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #333;">Per Row Limits:</h4>
                                         <label style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-                                            <input type="checkbox" id="enableMaxLaddersPerRow" checked style="margin: 0;">
+                                            <input type="checkbox" id="enableMaxLaddersPerRow" style="margin: 0;">
                                             <span style="font-size: 13px; min-width: 100px; color: #333;">Max Ladders:</span>
                                             <input type="number" id="maxLaddersPerRow" min="0" max="10" value="1" style="width: 50px; padding: 4px; margin: 0;">
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 8px; margin: 5px 0;">
-                                            <input type="checkbox" id="enableMaxSnakesPerRow" checked style="margin: 0;">
+                                            <input type="checkbox" id="enableMaxSnakesPerRow" style="margin: 0;">
                                             <span style="font-size: 13px; min-width: 100px; color: #333;">Max Snakes:</span>
                                             <input type="number" id="maxSnakesPerRow" min="0" max="10" value="1" style="width: 50px; padding: 4px; margin: 0;">
                                         </label>
@@ -127,11 +127,16 @@
                     
                     <!-- Custom snakes and ladders inputs -->
                     <div id="customSnakesLaddersInputs" style="display: none;">
-                        <label>Snakes (format: {from:to, from:to}):</label>
-                        <textarea id="customSnakesInput" rows="3" style="width: 100%; padding: 8px; border: 2px solid #667eea; border-radius: 8px; font-family: monospace; resize: vertical; overflow-y: auto; margin-bottom: 10px;" placeholder="{16:6, 47:26, 49:11}"></textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <label style="margin: 0;">Snakes:</label>
+                            <button type="button" id="generateCustomBtn" style="padding: 4px 12px; font-size: 12px; background: linear-gradient(to bottom, #ffffff, #f1f3f5); border: 1px solid #adb5bd; border-radius: 6px; color: #495057; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-weight: 600; cursor: pointer;">
+                                🎲 Generate from Random Settings
+                            </button>
+                        </div>
+                        <textarea id="customSnakesInput" rows="3" style="width: 100%; padding: 8px; border: 2px solid #667eea; border-radius: 8px; font-family: monospace; resize: vertical; overflow-y: auto; margin-bottom: 10px;" placeholder="16:6, 47:26, 49:11"></textarea>
                         
-                        <label>Ladders (format: {from:to, from:to}):</label>
-                        <textarea id="customLaddersInput" rows="3" style="width: 100%; padding: 8px; border: 2px solid #667eea; border-radius: 8px; font-family: monospace; resize: vertical; overflow-y: auto;" placeholder="{1:38, 4:14, 9:31}"></textarea>
+                        <label>Ladders:</label>
+                        <textarea id="customLaddersInput" rows="3" style="width: 100%; padding: 8px; border: 2px solid #667eea; border-radius: 8px; font-family: monospace; resize: vertical; overflow-y: auto;" placeholder="1:38, 4:14, 9:31"></textarea>
                     </div>
                 </div>
                 
@@ -282,7 +287,7 @@
                             </div>
                         </div>
                         
-                        <!-- Modifiers - REMOVED "(chance-based)" -->
+                        <!-- Modifiers -->
                         <div>
                             <div>🎲 Modifiers:</div>
                             <div>
