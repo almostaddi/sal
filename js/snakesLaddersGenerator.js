@@ -54,6 +54,10 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
     // Track used "to" squares (prefer not to reuse, but allow if necessary)
     const usedToSquares = new Set();
     
+    // CRITICAL: Also track ALL squares that are part of any snake/ladder
+    // A square cannot be both a destination AND a start
+    const allUsedSquares = new Set([1, totalSquares]);
+    
     // Track count per row
     const anyPerRow = Array(numRows).fill(0);
     
@@ -76,6 +80,7 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
                     preset, 
                     usedFromSquares, 
                     usedToSquares,
+                    allUsedSquares,
                     anyPerRow,
                     numRows
                 );
@@ -84,6 +89,8 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
                     snakes[snake.from] = snake.to;
                     usedFromSquares.add(snake.from);
                     usedToSquares.add(snake.to);
+                    allUsedSquares.add(snake.from);
+                    allUsedSquares.add(snake.to);
                     
                     const fromRow = Math.floor((snake.from - 1) / 10);
                     anyPerRow[fromRow]++;
@@ -101,6 +108,7 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
                     preset,
                     usedFromSquares,
                     usedToSquares,
+                    allUsedSquares,
                     anyPerRow,
                     numRows
                 );
@@ -109,6 +117,8 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
                     ladders[ladder.from] = ladder.to;
                     usedFromSquares.add(ladder.from);
                     usedToSquares.add(ladder.to);
+                    allUsedSquares.add(ladder.from);
+                    allUsedSquares.add(ladder.to);
                     
                     const fromRow = Math.floor((ladder.from - 1) / 10);
                     anyPerRow[fromRow]++;
@@ -121,15 +131,15 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
 }
 
 // Generate a single snake
-function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, usedToSquares, anyPerRow, numRows) {
+function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, usedToSquares, allUsedSquares, anyPerRow, numRows) {
     const attempts = 100;
     
     for (let attempt = 0; attempt < attempts; attempt++) {
         // Pick random "from" square in this row
         const from = Math.floor(Math.random() * 10) + rowStart;
         
-        // Skip if already used as a "from" square
-        if (usedFromSquares.has(from)) continue;
+        // CRITICAL: Skip if already used anywhere (as from OR to)
+        if (allUsedSquares.has(from)) continue;
         
         // Check row limit
         const fromRow = Math.floor((from - 1) / 10);
@@ -154,18 +164,22 @@ function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, 
             if (to >= from) continue; // Can't create valid snake
         }
         
-        // Prefer unused "to" squares, but allow reuse if necessary
+        // CRITICAL: Check if destination is already used anywhere
+        if (allUsedSquares.has(to)) continue;
+        
+        // Prefer unused "to" squares
         if (!usedToSquares.has(to)) {
             // Found unused destination - use it
             return { from, to };
         }
     }
     
-    // Second pass: allow reusing "to" squares
+    // Second pass: allow reusing "to" squares (but still not if they're already a "from")
     for (let attempt = 0; attempt < attempts; attempt++) {
         const from = Math.floor(Math.random() * 10) + rowStart;
         
-        if (usedFromSquares.has(from)) continue;
+        // CRITICAL: Skip if already used anywhere
+        if (allUsedSquares.has(from)) continue;
         
         const fromRow = Math.floor((from - 1) / 10);
         if (anyPerRow[fromRow] >= preset.maxAnyPerRow) continue;
@@ -176,7 +190,7 @@ function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, 
         if (maxFall < minFall) {
             // No viable squares with min fall - pick highest available instead
             const highestFall = from - 1;
-            if (highestFall >= 1) {
+            if (highestFall >= 1 && !allUsedSquares.has(highestFall)) {
                 return { from, to: highestFall };
             }
             continue;
@@ -194,7 +208,10 @@ function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, 
             }
         }
         
-        // Allow reusing "to" squares in second pass
+        // CRITICAL: Still can't use a square that's already a "from"
+        if (allUsedSquares.has(to)) continue;
+        
+        // Allow reusing "to" squares in second pass (destinations can be reused)
         return { from, to };
     }
     
@@ -202,15 +219,15 @@ function generateSnake(totalSquares, rowStart, rowEnd, preset, usedFromSquares, 
 }
 
 // Generate a single ladder
-function generateLadder(totalSquares, rowStart, rowEnd, preset, usedFromSquares, usedToSquares, anyPerRow, numRows) {
+function generateLadder(totalSquares, rowStart, rowEnd, preset, usedFromSquares, usedToSquares, allUsedSquares, anyPerRow, numRows) {
     const attempts = 100;
     
     for (let attempt = 0; attempt < attempts; attempt++) {
         // Pick random "from" square in this row
         const from = Math.floor(Math.random() * 10) + rowStart;
         
-        // Skip if already used as a "from" square
-        if (usedFromSquares.has(from)) continue;
+        // CRITICAL: Skip if already used anywhere (as from OR to)
+        if (allUsedSquares.has(from)) continue;
         
         // Check row limit
         const fromRow = Math.floor((from - 1) / 10);
@@ -232,7 +249,7 @@ function generateLadder(totalSquares, rowStart, rowEnd, preset, usedFromSquares,
             const highestJump = totalSquares - from;
             if (highestJump >= 1) {
                 const to = from + highestJump;
-                if (to <= totalSquares && to > from && to !== totalSquares) {
+                if (to <= totalSquares && to > from && to !== totalSquares && !allUsedSquares.has(to)) {
                     if (!usedToSquares.has(to)) {
                         return { from, to };
                     }
@@ -253,18 +270,22 @@ function generateLadder(totalSquares, rowStart, rowEnd, preset, usedFromSquares,
         // Ensure valid
         if (to > totalSquares || to <= from) continue;
         
-        // Prefer unused "to" squares, but allow reuse if necessary
+        // CRITICAL: Check if destination is already used anywhere
+        if (allUsedSquares.has(to)) continue;
+        
+        // Prefer unused "to" squares
         if (!usedToSquares.has(to)) {
             // Found unused destination - use it
             return { from, to };
         }
     }
     
-    // Second pass: allow reusing "to" squares
+    // Second pass: allow reusing "to" squares (but still not if they're already a "from")
     for (let attempt = 0; attempt < attempts; attempt++) {
         const from = Math.floor(Math.random() * 10) + rowStart;
         
-        if (usedFromSquares.has(from)) continue;
+        // CRITICAL: Skip if already used anywhere
+        if (allUsedSquares.has(from)) continue;
         
         const fromRow = Math.floor((from - 1) / 10);
         if (anyPerRow[fromRow] >= preset.maxAnyPerRow) continue;
@@ -277,7 +298,7 @@ function generateLadder(totalSquares, rowStart, rowEnd, preset, usedFromSquares,
         if (effectiveMaxJump < minJump) {
             // Pick highest available
             const to = totalSquares - 1; // Don't use final square
-            if (to > from && !usedFromSquares.has(to)) {
+            if (to > from && !allUsedSquares.has(to)) {
                 return { from, to };
             }
             continue;
@@ -292,7 +313,10 @@ function generateLadder(totalSquares, rowStart, rowEnd, preset, usedFromSquares,
         
         if (to > totalSquares || to <= from) continue;
         
-        // Allow reusing "to" squares in second pass
+        // CRITICAL: Still can't use a square that's already used
+        if (allUsedSquares.has(to)) continue;
+        
+        // Allow reusing "to" squares in second pass (destinations can be reused)
         return { from, to };
     }
     
@@ -355,10 +379,10 @@ export function validateCustomSnakesLadders(snakes, ladders, totalSquares) {
             errors.push(`Square ${fromNum} is used as the start of multiple specials`);
         }
         if (allUsedSquares.has(fromNum)) {
-            errors.push(`Square ${fromNum} cannot be both a destination and a start`);
+            errors.push(`Square ${fromNum} cannot be both a destination and a start (destination from another special conflicts)`);
         }
         if (allUsedSquares.has(toNum)) {
-            errors.push(`Square ${toNum} is used multiple times`);
+            errors.push(`Square ${toNum} is used multiple times (cannot be destination for multiple specials)`);
         }
         
         allFromSquares.add(fromNum);
@@ -391,10 +415,10 @@ export function validateCustomSnakesLadders(snakes, ladders, totalSquares) {
             errors.push(`Square ${fromNum} is used as the start of multiple specials`);
         }
         if (allUsedSquares.has(fromNum)) {
-            errors.push(`Square ${fromNum} cannot be both a destination and a start`);
+            errors.push(`Square ${fromNum} cannot be both a destination and a start (destination from another special conflicts)`);
         }
         if (allUsedSquares.has(toNum)) {
-            errors.push(`Square ${toNum} is used multiple times`);
+            errors.push(`Square ${toNum} is used multiple times (cannot be destination for multiple specials)`);
         }
         
         allFromSquares.add(fromNum);
