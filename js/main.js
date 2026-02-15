@@ -359,12 +359,10 @@ function setupEventListeners() {
         });
     });
     
-    // Snakes and Ladders difficulty radio buttons
-    document.querySelectorAll('input[name="snakesLaddersDifficulty"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            window.GAME_STATE.snakesLaddersDifficulty = this.value;
-            saveGameState();
-        });
+    // Snakes and Ladders difficulty dropdown
+    document.getElementById('snakesLaddersDifficulty').addEventListener('change', function() {
+        window.GAME_STATE.snakesLaddersDifficulty = this.value;
+        saveGameState();
     });
     
     // Custom snakes and ladders inputs
@@ -802,8 +800,8 @@ function resetSettings() {
     if (classicRadio) classicRadio.checked = true;
     handleSnakesLaddersModeChange('classic');
     
-    const mediumRadio = document.querySelector('input[name="snakesLaddersDifficulty"][value="medium"]');
-    if (mediumRadio) mediumRadio.checked = true;
+    const difficultyDropdown = document.getElementById('snakesLaddersDifficulty');
+    if (difficultyDropdown) difficultyDropdown.value = 'medium';
     window.GAME_STATE.snakesLaddersDifficulty = 'medium';
     
     // Reset all final challenge checkboxes
