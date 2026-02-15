@@ -1,85 +1,205 @@
 // Snakes and Ladders generation logic
 
-// Generate random snakes and ladders based on board size
-export function generateRandomSnakesAndLadders(totalSquares) {
+// Parse exclusion ranges (e.g., "1-10, 40-50" -> [[1,10], [40,50]])
+function parseExclusionRanges(rangesText) {
+    if (!rangesText || !rangesText.trim()) return [];
+    
+    const ranges = [];
+    const parts = rangesText.split(',');
+    
+    for (const part of parts) {
+        const trimmed = part.trim();
+        if (!trimmed) continue;
+        
+        const match = trimmed.match(/^(\d+)-(\d+)$/);
+        if (match) {
+            const start = parseInt(match[1]);
+            const end = parseInt(match[2]);
+            if (start <= end) {
+                ranges.push([start, end]);
+            }
+        }
+    }
+    
+    return ranges;
+}
+
+// Check if square is in any exclusion range
+function isInExclusionRanges(square, ranges) {
+    for (const [start, end] of ranges) {
+        if (square >= start && square <= end) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Generate random snakes and ladders based on board size and config
+export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
+    // Default config values
+    const cfg = {
+        enableMaxLaddersPerRow: config.enableMaxLaddersPerRow ?? true,
+        maxLaddersPerRow: config.maxLaddersPerRow ?? 1,
+        enableMaxSnakesPerRow: config.enableMaxSnakesPerRow ?? true,
+        maxSnakesPerRow: config.maxSnakesPerRow ?? 1,
+        enableMaxAnyPerRow: config.enableMaxAnyPerRow ?? true,
+        maxAnyPerRow: config.maxAnyPerRow ?? 3,
+        enableMaxJump: config.enableMaxJump ?? true,
+        maxJump: config.maxJump ?? 60,
+        enableMaxFall: config.enableMaxFall ?? true,
+        maxFall: config.maxFall ?? 60,
+        enableMinJump: config.enableMinJump ?? true,
+        minJump: config.minJump ?? 4,
+        enableMinFall: config.enableMinFall ?? true,
+        minFall: config.minFall ?? 4,
+        enableNoSnakesRanges: config.enableNoSnakesRanges ?? false,
+        noSnakesRanges: config.noSnakesRanges ?? '',
+        enableNoLaddersRanges: config.enableNoLaddersRanges ?? false,
+        noLaddersRanges: config.noLaddersRanges ?? ''
+    };
+    
+    // Parse exclusion ranges
+    const noSnakesRanges = cfg.enableNoSnakesRanges ? parseExclusionRanges(cfg.noSnakesRanges) : [];
+    const noLaddersRanges = cfg.enableNoLaddersRanges ? parseExclusionRanges(cfg.noLaddersRanges) : [];
+    
     const numRows = totalSquares / 10;
     const snakes = {};
     const ladders = {};
     const usedSquares = new Set([1, totalSquares]); // Reserve start and finish
     
-    // Track special squares per row
-    const specialsPerRow = Array(numRows).fill(0);
+    // Track specials per row
+    const snakesPerRow = Array(numRows).fill(0);
+    const laddersPerRow = Array(numRows).fill(0);
+    const anyPerRow = Array(numRows).fill(0);
     
-    // Generate 1 snake and 1 ladder per row
+    // Determine target number of snakes/ladders per row
+    const targetSnakesPerRow = cfg.enableMaxSnakesPerRow ? cfg.maxSnakesPerRow : 1;
+    const targetLaddersPerRow = cfg.enableMaxLaddersPerRow ? cfg.maxLaddersPerRow : 1;
+    
+    // Generate snakes and ladders
     for (let i = 0; i < numRows; i++) {
-        // Try to place a snake
-        let snakeAttempts = 0;
-        while (snakeAttempts < 100) {
-            const from = Math.floor(Math.random() * totalSquares) + 1;
-            const maxFall = Math.min(60, from - 1);
-            const minFall = 4;
-            
-            if (maxFall < minFall) {
-                snakeAttempts++;
-                continue;
+        // Try to place snakes for this row
+        for (let s = 0; s < targetSnakesPerRow; s++) {
+            let snakeAttempts = 0;
+            while (snakeAttempts < 100) {
+                const from = Math.floor(Math.random() * totalSquares) + 1;
+                
+                // Check exclusion ranges
+                if (isInExclusionRanges(from, noSnakesRanges)) {
+                    snakeAttempts++;
+                    continue;
+                }
+                
+                // Calculate fall range
+                const absoluteMaxFall = from - 1;
+                const configMaxFall = cfg.enableMaxFall ? cfg.maxFall : absoluteMaxFall;
+                const maxFall = Math.min(configMaxFall, absoluteMaxFall);
+                const minFall = cfg.enableMinFall ? cfg.minFall : 1;
+                
+                if (maxFall < minFall) {
+                    snakeAttempts++;
+                    continue;
+                }
+                
+                const fall = Math.floor(Math.random() * (maxFall - minFall + 1)) + minFall;
+                const to = from - fall;
+                
+                // Check constraints
+                const fromRow = Math.floor((from - 1) / 10);
+                const toRow = Math.floor((to - 1) / 10);
+                
+                // Check if to is in exclusion range
+                if (isInExclusionRanges(to, noSnakesRanges)) {
+                    snakeAttempts++;
+                    continue;
+                }
+                
+                // Check row limits (most restrictive takes priority)
+                let rowLimitExceeded = false;
+                
+                if (cfg.enableMaxSnakesPerRow && snakesPerRow[fromRow] >= cfg.maxSnakesPerRow) {
+                    rowLimitExceeded = true;
+                }
+                if (cfg.enableMaxAnyPerRow && anyPerRow[fromRow] >= cfg.maxAnyPerRow) {
+                    rowLimitExceeded = true;
+                }
+                
+                if (to < 1 || usedSquares.has(from) || usedSquares.has(to) || rowLimitExceeded) {
+                    snakeAttempts++;
+                    continue;
+                }
+                
+                // Valid snake found
+                snakes[from] = to;
+                usedSquares.add(from);
+                usedSquares.add(to);
+                snakesPerRow[fromRow]++;
+                anyPerRow[fromRow]++;
+                if (toRow !== fromRow) anyPerRow[toRow]++;
+                break;
             }
-            
-            const fall = Math.floor(Math.random() * (maxFall - minFall + 1)) + minFall;
-            const to = from - fall;
-            
-            // Check constraints
-            const fromRow = Math.floor((from - 1) / 10);
-            const toRow = Math.floor((to - 1) / 10);
-            
-            // UPDATED: Check that neither from nor to are already used as ANY special square
-            if (to < 1 || usedSquares.has(from) || usedSquares.has(to) ||
-                specialsPerRow[fromRow] >= 3) {
-                snakeAttempts++;
-                continue;
-            }
-            
-            // Valid snake found
-            snakes[from] = to;
-            usedSquares.add(from);
-            usedSquares.add(to);
-            specialsPerRow[fromRow]++;
-            if (toRow !== fromRow) specialsPerRow[toRow]++;
-            break;
         }
         
-        // Try to place a ladder
-        let ladderAttempts = 0;
-        while (ladderAttempts < 100) {
-            const from = Math.floor(Math.random() * totalSquares) + 1;
-            const maxClimb = Math.min(60, totalSquares - from);
-            const minClimb = 4;
-            
-            if (maxClimb < minClimb) {
-                ladderAttempts++;
-                continue;
+        // Try to place ladders for this row
+        for (let l = 0; l < targetLaddersPerRow; l++) {
+            let ladderAttempts = 0;
+            while (ladderAttempts < 100) {
+                const from = Math.floor(Math.random() * totalSquares) + 1;
+                
+                // Check exclusion ranges
+                if (isInExclusionRanges(from, noLaddersRanges)) {
+                    ladderAttempts++;
+                    continue;
+                }
+                
+                // Calculate climb range
+                const absoluteMaxClimb = totalSquares - from;
+                const configMaxClimb = cfg.enableMaxJump ? cfg.maxJump : absoluteMaxClimb;
+                const maxClimb = Math.min(configMaxClimb, absoluteMaxClimb);
+                const minClimb = cfg.enableMinJump ? cfg.minJump : 1;
+                
+                if (maxClimb < minClimb) {
+                    ladderAttempts++;
+                    continue;
+                }
+                
+                const climb = Math.floor(Math.random() * (maxClimb - minClimb + 1)) + minClimb;
+                const to = from + climb;
+                
+                // Check constraints
+                const fromRow = Math.floor((from - 1) / 10);
+                const toRow = Math.floor((to - 1) / 10);
+                
+                // Check if to is in exclusion range
+                if (isInExclusionRanges(to, noLaddersRanges)) {
+                    ladderAttempts++;
+                    continue;
+                }
+                
+                // Check row limits (most restrictive takes priority)
+                let rowLimitExceeded = false;
+                
+                if (cfg.enableMaxLaddersPerRow && laddersPerRow[fromRow] >= cfg.maxLaddersPerRow) {
+                    rowLimitExceeded = true;
+                }
+                if (cfg.enableMaxAnyPerRow && anyPerRow[fromRow] >= cfg.maxAnyPerRow) {
+                    rowLimitExceeded = true;
+                }
+                
+                if (to > totalSquares || usedSquares.has(from) || usedSquares.has(to) || rowLimitExceeded) {
+                    ladderAttempts++;
+                    continue;
+                }
+                
+                // Valid ladder found
+                ladders[from] = to;
+                usedSquares.add(from);
+                usedSquares.add(to);
+                laddersPerRow[fromRow]++;
+                anyPerRow[fromRow]++;
+                if (toRow !== fromRow) anyPerRow[toRow]++;
+                break;
             }
-            
-            const climb = Math.floor(Math.random() * (maxClimb - minClimb + 1)) + minClimb;
-            const to = from + climb;
-            
-            // Check constraints
-            const fromRow = Math.floor((from - 1) / 10);
-            const toRow = Math.floor((to - 1) / 10);
-            
-            // UPDATED: Check that neither from nor to are already used as ANY special square
-            if (to > totalSquares || usedSquares.has(from) || usedSquares.has(to) ||
-                specialsPerRow[fromRow] >= 3) {
-                ladderAttempts++;
-                continue;
-            }
-            
-            // Valid ladder found
-            ladders[from] = to;
-            usedSquares.add(from);
-            usedSquares.add(to);
-            specialsPerRow[fromRow]++;
-            if (toRow !== fromRow) specialsPerRow[toRow]++;
-            break;
         }
     }
     
