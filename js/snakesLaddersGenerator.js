@@ -23,7 +23,7 @@ const DIFFICULTY_PRESETS = {
         maxJumpPercent: 50,
         maxFallPercent: 30,
         snakesPerRow: 1,
-        laddersPerRow: 1.5,
+        laddersPerRow: 2,
         maxAnyPerRow: 4
     },
     medium: {
@@ -40,7 +40,7 @@ const DIFFICULTY_PRESETS = {
         minFallPercent: 10,
         maxJumpPercent: 30,
         maxFallPercent: 50,
-        snakesPerRow: 1.5,
+        snakesPerRow: 2,
         laddersPerRow: 1,
         maxAnyPerRow: 4
     }
@@ -79,8 +79,11 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
     while (snakesPlaced < totalSnakesToGenerate && attempts < maxAttempts) {
         attempts++;
         
-        // Pick a random row (excluding first row - no snakes there)
-        const rowIndex = Math.floor(Math.random() * (numRows - 1)) + 1; // rows 1 to numRows-1
+        // Pick a random row
+        // Exception: 10-square boards can have snakes on first row (only 1 row otherwise)
+        // All other boards: exclude first row for snakes
+        const minRow = (totalSquares === 10) ? 0 : 1;
+        const rowIndex = Math.floor(Math.random() * (numRows - minRow)) + minRow;
         const rowStart = rowIndex * 10 + 1;
         const rowEnd = rowStart + 9;
         
