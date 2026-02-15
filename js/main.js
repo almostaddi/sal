@@ -81,22 +81,13 @@ function updateClassicRadioState(boardSize) {
     const classicRadio = document.querySelector('input[name="snakesLaddersMode"][value="classic"]');
     if (!classicRadio) return;
     
-    const isSize100 = boardSize === 100;
-    classicRadio.disabled = !isSize100;
+    // Classic is always enabled now - we'll change board size when selected
+    classicRadio.disabled = false;
     
     const label = classicRadio.parentElement;
     if (label) {
-        label.style.opacity = isSize100 ? '1' : '0.5';
-        label.style.cursor = isSize100 ? 'pointer' : 'not-allowed';
-    }
-    
-    // If board size changed from 100 and classic is selected, switch to random
-    if (!isSize100 && classicRadio.checked) {
-        const randomRadio = document.querySelector('input[name="snakesLaddersMode"][value="random"]');
-        if (randomRadio) {
-            randomRadio.checked = true;
-            handleSnakesLaddersModeChange('random');
-        }
+        label.style.opacity = '1';
+        label.style.cursor = 'pointer';
     }
 }
 
@@ -355,6 +346,14 @@ function setupEventListeners() {
     // Snakes and Ladders mode radio buttons
     document.querySelectorAll('input[name="snakesLaddersMode"]').forEach(radio => {
         radio.addEventListener('change', function() {
+            // If Classic is selected and board size is not 100, change it to 100
+            if (this.value === 'classic') {
+                const boardSizeInput = document.getElementById('boardSizeSelect');
+                if (boardSizeInput && parseInt(boardSizeInput.value) !== 100) {
+                    boardSizeInput.value = 100;
+                    validateBoardSize(boardSizeInput);
+                }
+            }
             handleSnakesLaddersModeChange(this.value);
         });
     });
