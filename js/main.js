@@ -366,10 +366,10 @@ function setupEventListeners() {
         const content = document.getElementById('advancedRandomContent');
         if (content.style.display === 'none') {
             content.style.display = 'block';
-            this.textContent = '⚙️ Hide Settings';
+            this.textContent = '⚙️ Hide';
         } else {
             content.style.display = 'none';
-            this.textContent = '⚙️ Advanced Settings';
+            this.textContent = '⚙️ Advanced';
         }
     });
     
