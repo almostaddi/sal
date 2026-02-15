@@ -69,6 +69,26 @@ export function initializeState() {
         snakesLaddersMode: 'classic', // NEW: classic, random, or custom
         customSnakes: {}, // NEW: custom snakes object
         customLadders: {}, // NEW: custom ladders object
+        randomGenConfig: { // NEW: random generation configuration
+            enableMaxLaddersPerRow: true,
+            maxLaddersPerRow: 1,
+            enableMaxSnakesPerRow: true,
+            maxSnakesPerRow: 1,
+            enableMaxAnyPerRow: true,
+            maxAnyPerRow: 3,
+            enableMaxJump: true,
+            maxJump: 60,
+            enableMaxFall: true,
+            maxFall: 60,
+            enableMinJump: true,
+            minJump: 4,
+            enableMinFall: true,
+            minFall: 4,
+            enableNoSnakesRanges: false,
+            noSnakesRanges: '',
+            enableNoLaddersRanges: false,
+            noLaddersRanges: ''
+        },
         currentInstruction: '', // Save current task HTML for restoration
         diceResultText: 'Dice: -',
         pendingSnakeLadder: null,
@@ -201,6 +221,26 @@ export function resetGameState() {
     window.GAME_STATE.snakesLaddersMode = 'classic';
     window.GAME_STATE.customSnakes = {};
     window.GAME_STATE.customLadders = {};
+    window.GAME_STATE.randomGenConfig = {
+        enableMaxLaddersPerRow: true,
+        maxLaddersPerRow: 1,
+        enableMaxSnakesPerRow: true,
+        maxSnakesPerRow: 1,
+        enableMaxAnyPerRow: true,
+        maxAnyPerRow: 3,
+        enableMaxJump: true,
+        maxJump: 60,
+        enableMaxFall: true,
+        maxFall: 60,
+        enableMinJump: true,
+        minJump: 4,
+        enableMinFall: true,
+        minFall: 4,
+        enableNoSnakesRanges: false,
+        noSnakesRanges: '',
+        enableNoLaddersRanges: false,
+        noLaddersRanges: ''
+    };
     window.GAME_STATE.prizeSettings = { full: 33, ruin: 33, denied: 34 };
     window.GAME_STATE.finalChallengeSettings = { stroking: 33, vibe: 33, anal: 34 };
     window.GAME_STATE.finalChallengeTypes = {
