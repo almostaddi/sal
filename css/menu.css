@@ -53,6 +53,7 @@ h1 {
     box-shadow: 0 6px 20px rgba(245, 159, 11, 0.5);
 }
 
+/* Start button - ONLY applies to #startButton */
 #startButton {
     padding: 20px 50px;
     font-size: 24px;
@@ -455,18 +456,18 @@ select {
 
 /* Sliders - REDUCED WHITESPACE */
 .slider-container {
-    margin: 2px 0; /* 
+    margin: 2px 0;
 }
 
 .slider-label {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0;
-    padding-bottom: 0; /* ADDED: Explicitly remove padding */
+    padding-bottom: 0;
     color: #333;
     font-weight: bold;
-    font-size: 16px; /* ADDED: Slightly larger than default */
-    line-height: 1.2; /* Keep tighter line height */
+    font-size: 16px;
+    line-height: 1.2;
 }
 
 .slider-label .percentage {
@@ -526,20 +527,20 @@ input[type="range"]::-moz-range-thumb {
 
 /* Final challenge types section */
 .settings-section > div {
-    margin-top: 5px; /* CHANGED: Reduced from 15px to 10px */
+    margin-top: 5px;
     padding-top: 0;
 }
 
 .settings-section > div > div {
-    margin-bottom: 10px; /* CHANGED: Reduced from 15px to 10px */
+    margin-bottom: 10px;
 }
 
 .settings-section > div > div > div:first-child {
     display: flex;
-    justify-content: flex-start; /* CHANGED: from space-between to flex-start */
+    justify-content: flex-start;
     align-items: center;
-    margin-bottom: 6px; /* CHANGED: Reduced from 8px to 6px */
-    gap: 10px; /* ADDED: Space between label and difficulty controls */
+    margin-bottom: 6px;
+    gap: 10px;
 }
 
 .settings-section > div > div > div:first-child > div:first-child {
@@ -609,10 +610,6 @@ input[type="range"]::-moz-range-thumb {
     font-size: 12px;
     margin: 0;
 }
-
-/* Modifiers section - NOTE: These rules should NOT apply to toy library! */
-/* Using a more specific selector path to target only final challenge modifiers */
-/* Target only the modifiers that are in the Final Challenges section specifically */
 
 /* Set checkbox styling - applies to set difficulty checkboxes */
 .set-difficulty input[type="checkbox"] {
