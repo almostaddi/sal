@@ -365,6 +365,20 @@ function setupEventListeners() {
         saveGameState();
     });
     
+    // Modifiers toggle button
+    document.getElementById('modifiersToggleBtn').addEventListener('click', function() {
+        const modifiersSection = document.getElementById('modifiersSection');
+        const isHidden = modifiersSection.style.display === 'none';
+        
+        if (isHidden) {
+            modifiersSection.style.display = 'block';
+            this.textContent = '👁️ Hide Modifiers';
+        } else {
+            modifiersSection.style.display = 'none';
+            this.textContent = '👁️ Show Modifiers';
+        }
+    });
+    
     // Custom snakes and ladders inputs
     document.getElementById('customSnakesInput').addEventListener('input', function() {
         window.GAME_STATE.customSnakes = parseCustomSnakesLadders(this.value);
