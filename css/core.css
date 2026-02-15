@@ -297,46 +297,54 @@ body.show-fixed-buttons #patchNotesBtn {
 }
 
 /* Reset modal specific styles */
-#resetModal .modal-content {
+#resetModal .modal-content,
+#resetSettingsModal .modal-content {
     text-align: center;
 }
 
-#resetModal .modal-content h2 {
+#resetModal .modal-content h2,
+#resetSettingsModal .modal-content h2 {
     font-size: 2em;
     margin-bottom: 20px;
 }
 
-#resetModal .modal-content p {
+#resetModal .modal-content p,
+#resetSettingsModal .modal-content p {
     font-size: 18px;
     margin: 20px 0;
 }
 
-#resetModal .modal-content > div {
+#resetModal .modal-content > div,
+#resetSettingsModal .modal-content > div {
     display: flex;
     gap: 15px;
     justify-content: center;
     margin-top: 30px;
 }
 
-#confirmReset {
+#confirmReset,
+#confirmResetSettings {
     padding: 12px 30px;
     font-size: 16px;
     background: var(--danger-gradient);
     box-shadow: 0 4px 15px rgba(250, 82, 82, 0.4);
 }
 
-#confirmReset:hover:not(:disabled) {
+#confirmReset:hover:not(:disabled),
+#confirmResetSettings:hover:not(:disabled) {
     box-shadow: 0 6px 20px rgba(250, 82, 82, 0.5);
 }
 
-#cancelReset {
+#cancelReset,
+#cancelResetSettings {
     padding: 12px 30px;
     font-size: 16px;
     background: var(--neutral-gradient);
     box-shadow: 0 4px 15px rgba(173, 181, 189, 0.4);
 }
 
-#cancelReset:hover:not(:disabled) {
+#cancelReset:hover:not(:disabled),
+#cancelResetSettings:hover:not(:disabled) {
     box-shadow: 0 6px 20px rgba(173, 181, 189, 0.5);
 }
 
@@ -380,26 +388,4 @@ body.show-fixed-buttons #patchNotesBtn {
     .close-btn {
         font-size: 24px;
     }
-    /* Reset modal specific styles */
-    #resetModal .modal-content,
-    #resetSettingsModal .modal-content {
-        text-align: center;
-    }
-    
-    #confirmReset,
-    #confirmResetSettings {
-        padding: 12px 30px;
-        font-size: 16px;
-        background: var(--danger-gradient);
-        box-shadow: 0 4px 15px rgba(250, 82, 82, 0.4);
-    }
-    
-    #cancelReset,
-    #cancelResetSettings {
-        padding: 12px 30px;
-        font-size: 16px;
-        background: var(--neutral-gradient);
-        box-shadow: 0 4px 15px rgba(173, 181, 189, 0.4);
-    }
-    
 }
