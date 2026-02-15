@@ -477,15 +477,9 @@ export function generateAndPopulateCustom() {
     // Get current board size
     const boardSize = parseInt(document.getElementById('boardSizeSelect').value) || 100;
     
-    // Get current difficulty setting from the radio buttons
-    let difficulty = 'medium'; // default
-    const difficultyRadios = document.querySelectorAll('input[name="snakesLaddersDifficulty"]');
-    for (const radio of difficultyRadios) {
-        if (radio.checked) {
-            difficulty = radio.value;
-            break;
-        }
-    }
+    // Get current difficulty setting from the dropdown
+    const difficultyDropdown = document.getElementById('snakesLaddersDifficulty');
+    const difficulty = difficultyDropdown ? difficultyDropdown.value : 'medium';
     
     // Generate snakes and ladders with selected difficulty
     const { snakes, ladders } = generateRandomSnakesAndLadders(boardSize, difficulty);
