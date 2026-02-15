@@ -70,9 +70,11 @@ export function initializeState() {
         customSnakes: {},
         customLadders: {},
         randomGenConfig: {
-            enableMaxLaddersPerRow: false,  // CHANGED from true
+            laddersPerRow: 1,
+            snakesPerRow: 1,
+            enableMaxLaddersPerRow: false,
             maxLaddersPerRow: 2,
-            enableMaxSnakesPerRow: false,   // CHANGED from true
+            enableMaxSnakesPerRow: false,
             maxSnakesPerRow: 2,
             enableMaxAnyPerRow: true,
             maxAnyPerRow: 3,
@@ -222,10 +224,12 @@ export function resetGameState() {
     window.GAME_STATE.customSnakes = {};
     window.GAME_STATE.customLadders = {};
     window.GAME_STATE.randomGenConfig = {
-        enableMaxLaddersPerRow: false,  // CHANGED from true
-        maxLaddersPerRow: 1,
-        enableMaxSnakesPerRow: false,   // CHANGED from true
-        maxSnakesPerRow: 1,
+        laddersPerRow: 1,
+        snakesPerRow: 1,
+        enableMaxLaddersPerRow: false,
+        maxLaddersPerRow: 2,
+        enableMaxSnakesPerRow: false,
+        maxSnakesPerRow: 2,
         enableMaxAnyPerRow: true,
         maxAnyPerRow: 3,
         enableMaxJump: true,
