@@ -38,9 +38,9 @@ function isInExclusionRanges(square, ranges) {
 export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
     // Default config values
     const cfg = {
-        enableMaxLaddersPerRow: config.enableMaxLaddersPerRow ?? true,
+        enableMaxLaddersPerRow: config.enableMaxLaddersPerRow ?? false,
         maxLaddersPerRow: config.maxLaddersPerRow ?? 1,
-        enableMaxSnakesPerRow: config.enableMaxSnakesPerRow ?? true,
+        enableMaxSnakesPerRow: config.enableMaxSnakesPerRow ?? false,
         maxSnakesPerRow: config.maxSnakesPerRow ?? 1,
         enableMaxAnyPerRow: config.enableMaxAnyPerRow ?? true,
         maxAnyPerRow: config.maxAnyPerRow ?? 3,
@@ -206,11 +206,14 @@ export function generateRandomSnakesAndLadders(totalSquares, config = {}) {
     return { snakes, ladders };
 }
 
-// Parse custom snakes/ladders string
+// Parse custom snakes/ladders string - UPDATED to support simpler format
 export function parseCustomSnakesLadders(text) {
     try {
-        // Remove whitespace and curly braces
-        text = text.trim().replace(/^\{/, '').replace(/\}$/, '');
+        // Remove whitespace
+        text = text.trim();
+        
+        // Remove curly braces if present (for backwards compatibility)
+        text = text.replace(/^\{/, '').replace(/\}$/, '');
         
         if (!text) return {};
         
@@ -301,7 +304,7 @@ export function validateCustomSnakesLadders(snakes, ladders, totalSquares) {
     return errors;
 }
 
-// Format snakes/ladders for display in textarea
+// Format snakes/ladders for display in textarea - UPDATED to remove curly braces
 export function formatSnakesLaddersForDisplay(obj) {
     if (!obj || Object.keys(obj).length === 0) return '';
     
@@ -309,5 +312,35 @@ export function formatSnakesLaddersForDisplay(obj) {
         .map(([from, to]) => `${from}:${to}`)
         .join(', ');
     
-    return `{${pairs}}`;
+    return pairs; // No more curly braces!
 }
+
+// Generate and populate custom fields
+export function generateAndPopulateCustom() {
+    // Get current board size
+    const boardSize = parseInt(document.getElementById('boardSizeSelect').value) || 100;
+    
+    // Get current random generation config
+    const config = window.GAME_STATE.randomGenConfig;
+    
+    // Generate snakes and ladders
+    const { snakes, ladders } = generateRandomSnakesAndLadders(boardSize, config);
+    
+    // Format and populate the textareas
+    document.getElementById('customSnakesInput').value = formatSnakesLaddersForDisplay(snakes);
+    document.getElementById('customLaddersInput').value = formatSnakesLaddersForDisplay(ladders);
+    
+    // Update game state
+    window.GAME_STATE.customSnakes = snakes;
+    window.GAME_STATE.customLadders = ladders;
+    
+    // Save state
+    if (window.GAME_FUNCTIONS && window.GAME_FUNCTIONS.saveState) {
+        window.GAME_FUNCTIONS.saveState();
+    }
+    
+    console.log('Generated custom snakes/ladders:', { snakes, ladders });
+}
+
+// Expose globally
+window.generateAndPopulateCustom = generateAndPopulateCustom;
