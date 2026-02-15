@@ -48,22 +48,12 @@
                             <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
                                 <input type="radio" name="snakesLaddersMode" value="random" style="margin: 0; cursor: pointer;">
                                 <span>Random</span>
+                                <select id="snakesLaddersDifficulty" style="margin-left: 10px; padding: 4px 8px; border: 2px solid #667eea; border-radius: 6px; font-size: 14px; cursor: pointer; background: white;">
+                                    <option value="easy">😊 Easy</option>
+                                    <option value="medium" selected>😐 Medium</option>
+                                    <option value="hard">😤 Hard</option>
+                                </select>
                             </label>
-                            <!-- Difficulty Selection - directly under Random -->
-                            <div id="randomDifficultySettings" style="margin-left: 24px; margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
-                                <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
-                                    <input type="radio" name="snakesLaddersDifficulty" value="easy" style="margin: 0; cursor: pointer;">
-                                    <span style="font-size: 14px;">😊 Easy (More ladders, gentler falls)</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
-                                    <input type="radio" name="snakesLaddersDifficulty" value="medium" checked style="margin: 0; cursor: pointer;">
-                                    <span style="font-size: 14px;">😐 Medium (Balanced)</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
-                                    <input type="radio" name="snakesLaddersDifficulty" value="hard" style="margin: 0; cursor: pointer;">
-                                    <span style="font-size: 14px;">😤 Hard (More snakes, harsher falls)</span>
-                                </label>
-                            </div>
                         </div>
                         <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;">
                             <input type="radio" name="snakesLaddersMode" value="custom" style="margin: 0; cursor: pointer;">
