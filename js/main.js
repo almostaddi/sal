@@ -208,10 +208,10 @@ function handleTaskCompletion() {
         window.GAME_STATE.pendingSnakeLadder = null;
         saveGameState();
         
-        // Return to board with Continue button
+        // Return to board with Enter button
         showPage('board');
         const rollDiceButton = document.getElementById('rollDice');
-        rollDiceButton.textContent = '➡️ Continue';
+        rollDiceButton.textContent = '🚪 Enter';
         rollDiceButton.disabled = false;
         rollDiceButton.onclick = null;
         
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (phase === 'awaiting_normal_task' || 
             phase === 'awaiting_snake_ladder_task' || 
             phase === 'awaiting_snake_ladder_movement') {
-            rollDiceButton.textContent = '➡️ Continue';
+            rollDiceButton.textContent = '🚪 Enter';
         } else {
             rollDiceButton.textContent = '🎲 Roll Dice';
         }
@@ -661,7 +661,7 @@ function restoreSavedGame(state) {
             }
         } else if (phase === 'awaiting_snake_ladder_task') {
             // Waiting to show snake/ladder task
-            // Button text already set to Continue
+            // Button text already set to Enter
             rollDiceButton.disabled = false;
             
             // Highlight destination
@@ -685,7 +685,7 @@ function restoreSavedGame(state) {
             }
         } else if (phase === 'awaiting_normal_task') {
             // Waiting to show normal task
-            // Button text already set to Continue
+            // Button text already set to Enter
             rollDiceButton.disabled = false;
             rollDiceButton.onclick = () => {
                 showPage('task');
