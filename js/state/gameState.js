@@ -67,30 +67,9 @@ export function initializeState() {
         },
         totalSquares: 100,
         snakesLaddersMode: 'classic',
+        snakesLaddersDifficulty: 'medium',
         customSnakes: {},
         customLadders: {},
-        randomGenConfig: {
-            laddersPerRow: 1,
-            snakesPerRow: 1,
-            enableMaxLaddersPerRow: false,
-            maxLaddersPerRow: 2,
-            enableMaxSnakesPerRow: false,
-            maxSnakesPerRow: 2,
-            enableMaxAnyPerRow: true,
-            maxAnyPerRow: 3,
-            enableMaxJump: true,
-            maxJump: 60,
-            enableMaxFall: true,
-            maxFall: 60,
-            enableMinJump: true,
-            minJump: 4,
-            enableMinFall: true,
-            minFall: 4,
-            enableNoSnakesRanges: false,
-            noSnakesRanges: '',
-            enableNoLaddersRanges: false,
-            noLaddersRanges: ''
-        },
         currentInstruction: '',
         diceResultText: 'Dice: -',
         pendingSnakeLadder: null,
@@ -182,6 +161,11 @@ export function loadGameState() {
             }
         }
         
+        // FIX: Ensure snakesLaddersDifficulty exists
+        if (!window.GAME_STATE.snakesLaddersDifficulty) {
+            window.GAME_STATE.snakesLaddersDifficulty = 'medium';
+        }
+        
         return state;
     } catch (e) {
         console.error('Failed to load saved game:', e);
@@ -221,30 +205,9 @@ export function resetGameState() {
     window.GAME_STATE.pendingSnakeLadder = null;
     window.GAME_STATE.totalSquares = 100;
     window.GAME_STATE.snakesLaddersMode = 'classic';
+    window.GAME_STATE.snakesLaddersDifficulty = 'medium';
     window.GAME_STATE.customSnakes = {};
     window.GAME_STATE.customLadders = {};
-    window.GAME_STATE.randomGenConfig = {
-        laddersPerRow: 1,
-        snakesPerRow: 1,
-        enableMaxLaddersPerRow: false,
-        maxLaddersPerRow: 2,
-        enableMaxSnakesPerRow: false,
-        maxSnakesPerRow: 2,
-        enableMaxAnyPerRow: true,
-        maxAnyPerRow: 3,
-        enableMaxJump: true,
-        maxJump: 60,
-        enableMaxFall: true,
-        maxFall: 60,
-        enableMinJump: true,
-        minJump: 4,
-        enableMinFall: true,
-        minFall: 4,
-        enableNoSnakesRanges: false,
-        noSnakesRanges: '',
-        enableNoLaddersRanges: false,
-        noLaddersRanges: ''
-    };
     window.GAME_STATE.prizeSettings = { full: 33, ruin: 33, denied: 34 };
     window.GAME_STATE.finalChallengeSettings = { stroking: 33, vibe: 33, anal: 34 };
     window.GAME_STATE.finalChallengeTypes = {
