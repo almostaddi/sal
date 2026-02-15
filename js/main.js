@@ -81,13 +81,23 @@ function updateClassicRadioState(boardSize) {
     const classicRadio = document.querySelector('input[name="snakesLaddersMode"][value="classic"]');
     if (!classicRadio) return;
     
-    // Classic is always enabled now - we'll change board size when selected
+    // Classic is always enabled (clickable)
     classicRadio.disabled = false;
     
     const label = classicRadio.parentElement;
     if (label) {
         label.style.opacity = '1';
         label.style.cursor = 'pointer';
+    }
+    
+    // If board size changed from 100 and classic is selected, switch to random
+    const isSize100 = boardSize === 100;
+    if (!isSize100 && classicRadio.checked) {
+        const randomRadio = document.querySelector('input[name="snakesLaddersMode"][value="random"]');
+        if (randomRadio) {
+            randomRadio.checked = true;
+            handleSnakesLaddersModeChange('random');
+        }
     }
 }
 
