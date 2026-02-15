@@ -154,12 +154,10 @@ function handleSnakesLaddersModeChange(mode) {
     const customInputs = document.getElementById('customSnakesLaddersInputs');
     const customSnakesInput = document.getElementById('customSnakesInput');
     const customLaddersInput = document.getElementById('customLaddersInput');
-    const advancedRandom = document.getElementById('advancedRandomSettings');
     
     if (mode === 'custom') {
-        // Show custom inputs, hide advanced random
+        // Show custom inputs
         customInputs.style.display = 'block';
-        advancedRandom.style.display = 'none';
         
         // Populate with current values if empty
         if (!customSnakesInput.value && Object.keys(window.GAME_STATE.customSnakes).length > 0) {
@@ -168,15 +166,12 @@ function handleSnakesLaddersModeChange(mode) {
         if (!customLaddersInput.value && Object.keys(window.GAME_STATE.customLadders).length > 0) {
             customLaddersInput.value = formatSnakesLaddersForDisplay(window.GAME_STATE.customLadders);
         }
-    } else if (mode === 'random') {
-        // Show advanced random, hide custom inputs
-        customInputs.style.display = 'none';
-        advancedRandom.style.display = 'block';
     } else {
-        // Classic - hide both
+        // Hide custom inputs
         customInputs.style.display = 'none';
-        advancedRandom.style.display = 'none';
     }
+    
+    // Advanced random settings button is always visible, user can toggle it
     
     saveGameState();
 }
@@ -371,10 +366,10 @@ function setupEventListeners() {
         const content = document.getElementById('advancedRandomContent');
         if (content.style.display === 'none') {
             content.style.display = 'block';
-            this.textContent = '⚙️ Hide Advanced Settings';
+            this.textContent = '⚙️ Hide Settings';
         } else {
             content.style.display = 'none';
-            this.textContent = '⚙️ Advanced Random Settings';
+            this.textContent = '⚙️ Advanced Settings';
         }
     });
     
@@ -500,18 +495,6 @@ function startGame() {
         return;
     }
     
-    window.GAME_STATE.playerName = playerName;
-    window.GAME_STATE.gameStarted = true;
-    window.GAME_STATE.gamePhase = 'awaiting_dice_roll';
-    
-    // Get board size - validate it first
-    const boardSizeInput = document.getElementById('boardSizeSelect');
-    validateBoardSize(boardSizeInput);
-    const boardSize = parseInt(boardSizeInput.value);
-    
-    window.GAME_STATE.totalSquares = boardSize;
-    boardRenderer.updateSize(boardSize);
-    
     // Generate or apply snakes and ladders based on mode
     const mode = window.GAME_STATE.snakesLaddersMode;
     
@@ -540,12 +523,17 @@ function startGame() {
         
         if (errors.length > 0) {
             alert('⚠️ Custom snakes/ladders have errors:\n\n' + errors.join('\n'));
+            // Don't start the game or set gameStarted flag
             return;
         }
         
         console.log('Using custom snakes:', window.BOARD_SNAKES);
         console.log('Using custom ladders:', window.BOARD_LADDERS);
     }
+    
+    // Only set gameStarted AFTER all validation passes
+    window.GAME_STATE.gameStarted = true;
+    window.GAME_STATE.gamePhase = 'awaiting_dice_roll';
     
     // Update board renderer with new snakes/ladders
     boardRenderer.snakes = window.BOARD_SNAKES;
