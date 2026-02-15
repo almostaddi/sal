@@ -160,11 +160,11 @@ function handleSnakesLaddersModeChange(mode) {
         // Show custom inputs
         customInputs.style.display = 'block';
         
-        // Populate with current values if empty
-        if (!customSnakesInput.value && Object.keys(window.GAME_STATE.customSnakes).length > 0) {
+        // Always populate with current values (either from state or empty)
+        if (Object.keys(window.GAME_STATE.customSnakes).length > 0) {
             customSnakesInput.value = formatSnakesLaddersForDisplay(window.GAME_STATE.customSnakes);
         }
-        if (!customLaddersInput.value && Object.keys(window.GAME_STATE.customLadders).length > 0) {
+        if (Object.keys(window.GAME_STATE.customLadders).length > 0) {
             customLaddersInput.value = formatSnakesLaddersForDisplay(window.GAME_STATE.customLadders);
         }
     } else {
@@ -275,6 +275,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Initialize classic radio state based on board size
     updateClassicRadioState(savedState?.totalSquares || 100);
+    
+    // Initialize custom snakes/ladders display if custom mode is selected
+    if (savedState?.snakesLaddersMode === 'custom') {
+        const customInputs = document.getElementById('customSnakesLaddersInputs');
+        if (customInputs) {
+            customInputs.style.display = 'block';
+        }
+    }
     
     // Load task registry
     console.log('📦 Loading task registry...');
