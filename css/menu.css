@@ -68,6 +68,31 @@ h1 {
     width: 100%;
 }
 
+#toggleAdvancedRandom {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    background: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+    color: #495057 !important;
+    box-shadow: none !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+#toggleAdvancedRandom:hover:not(:disabled) {
+    background: #e9ecef !important;
+    border-color: #adb5bd !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#toggleAdvancedRandom:active {
+    background: #dee2e6 !important;
+}
+
 .settings-column-left,
 .settings-column-right {
     flex: 1;
