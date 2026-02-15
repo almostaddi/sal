@@ -120,8 +120,13 @@
                         <input type="range" id="analSlider" min="0" max="100" value="34">
                     </div>
                     
-                    <!-- Challenge Types -->
-                    <div>
+                    <!-- Toggle button for challenge types -->
+                    <button type="button" id="toggleChallengeTypes" style="padding: 8px 16px; font-size: 14px; margin-top: 15px; margin-bottom: 10px; background: linear-gradient(to bottom, #ffffff, #f1f3f5); border: 1px solid #adb5bd; border-radius: 6px; color: #495057; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-weight: 600; cursor: pointer; width: 100%; text-align: left;">
+                        ▶ Show Challenge Types & Difficulty
+                    </button>
+                    
+                    <!-- Challenge Types Container (hidden by default) -->
+                    <div id="challengeTypesContainer" style="display: none;">
                         <h4>Challenge Types & Difficulty:</h4>
                         
                         <!-- Stroking -->
@@ -319,6 +324,20 @@
             });
             document.getElementById('homePatchNotesBtn').addEventListener('click', () => {
                 document.getElementById('patchNotesBtn').click();
+            });
+            
+            // Wire up toggle button for challenge types
+            const toggleBtn = document.getElementById('toggleChallengeTypes');
+            const container = document.getElementById('challengeTypesContainer');
+            
+            toggleBtn.addEventListener('click', () => {
+                if (container.style.display === 'none') {
+                    container.style.display = 'block';
+                    toggleBtn.innerHTML = '▼ Hide Challenge Types & Difficulty';
+                } else {
+                    container.style.display = 'none';
+                    toggleBtn.innerHTML = '▶ Show Challenge Types & Difficulty';
+                }
             });
         });
     </script>
