@@ -7,15 +7,15 @@
 // - Math.max(1, ...) ensures at least 1 square movement on tiny boards
 // - Absolute limits ensure snakes don't go below square 1, ladders don't exceed board
 //
-// Examples for 100-square board:
-// Easy: minJump=10 squares, maxJump=50 squares, minFall=5 squares, maxFall=30 squares
-// Medium: minJump=5 squares, maxJump=40 squares, minFall=5 squares, maxFall=40 squares
-// Hard: minJump=5 squares, maxJump=30 squares, minFall=10 squares, maxFall=50 squares
+// Snakes/Ladders per row are MULTIPLIED by number of rows to get total count
+// Example: 1.5 snakes per row × 10 rows = 15 total snakes to place
 //
-// Examples for 10-square board:
-// Easy: minJump=1 square, maxJump=5 squares, minFall=1 square, maxFall=3 squares
-// Medium: minJump=1 square, maxJump=4 squares, minFall=1 square, maxFall=4 squares
-// Hard: minJump=1 square, maxJump=3 squares, minFall=1 square, maxFall=5 squares
+// Examples for 100-square board (10 rows):
+// Easy: 10 ladders (1×10), 20 snakes (2×10), minJump=10, maxJump=50, minFall=5, maxFall=30
+// Medium: 10 ladders (1×10), 10 snakes (1×10), minJump=5, maxJump=40, minFall=5, maxFall=40
+// Hard: 10 ladders (1×10), 20 snakes (2×10), minJump=5, maxJump=30, minFall=10, maxFall=50
+//
+// Placement is controlled by maxAnyPerRow limit (not by generation targets)
 const DIFFICULTY_PRESETS = {
     easy: {
         minJumpPercent: 10,
@@ -54,6 +54,10 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
     const snakes = {};
     const ladders = {};
     
+    // Calculate total snakes and ladders to generate
+    const totalSnakesToGenerate = Math.round(preset.snakesPerRow * numRows);
+    const totalLaddersToGenerate = Math.round(preset.laddersPerRow * numRows);
+    
     // Track used "from" squares (can only be start of one special)
     const usedFromSquares = new Set([1, totalSquares]); // Reserve start and finish
     
@@ -67,71 +71,82 @@ export function generateRandomSnakesAndLadders(totalSquares, difficulty = 'mediu
     // Track count per row
     const anyPerRow = Array(numRows).fill(0);
     
-    // Generate for each row
-    for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
+    // Generate snakes (try to place totalSnakesToGenerate snakes anywhere on board)
+    let snakesPlaced = 0;
+    let attempts = 0;
+    const maxAttempts = totalSnakesToGenerate * 20; // Give plenty of attempts
+    
+    while (snakesPlaced < totalSnakesToGenerate && attempts < maxAttempts) {
+        attempts++;
+        
+        // Pick a random row (excluding first row - no snakes there)
+        const rowIndex = Math.floor(Math.random() * (numRows - 1)) + 1; // rows 1 to numRows-1
         const rowStart = rowIndex * 10 + 1;
         const rowEnd = rowStart + 9;
         
-        // Skip first row for snakes, last row for ladders
-        const canPlaceSnakes = rowIndex > 0;
-        const canPlaceLadders = rowIndex < numRows - 1;
+        const snake = generateSnake(
+            totalSquares,
+            rowStart,
+            rowEnd,
+            preset,
+            usedFromSquares,
+            usedToSquares,
+            allUsedSquares,
+            anyPerRow,
+            numRows
+        );
         
-        // Try to place snakes for this row
-        if (canPlaceSnakes) {
-            for (let s = 0; s < preset.snakesPerRow; s++) {
-                const snake = generateSnake(
-                    totalSquares, 
-                    rowStart, 
-                    rowEnd, 
-                    preset, 
-                    usedFromSquares, 
-                    usedToSquares,
-                    allUsedSquares,
-                    anyPerRow,
-                    numRows
-                );
-                
-                if (snake) {
-                    snakes[snake.from] = snake.to;
-                    usedFromSquares.add(snake.from);
-                    usedToSquares.add(snake.to);
-                    allUsedSquares.add(snake.from);
-                    allUsedSquares.add(snake.to);
-                    
-                    const fromRow = Math.floor((snake.from - 1) / 10);
-                    anyPerRow[fromRow]++;
-                }
-            }
-        }
-        
-        // Try to place ladders for this row
-        if (canPlaceLadders) {
-            for (let l = 0; l < preset.laddersPerRow; l++) {
-                const ladder = generateLadder(
-                    totalSquares,
-                    rowStart,
-                    rowEnd,
-                    preset,
-                    usedFromSquares,
-                    usedToSquares,
-                    allUsedSquares,
-                    anyPerRow,
-                    numRows
-                );
-                
-                if (ladder) {
-                    ladders[ladder.from] = ladder.to;
-                    usedFromSquares.add(ladder.from);
-                    usedToSquares.add(ladder.to);
-                    allUsedSquares.add(ladder.from);
-                    allUsedSquares.add(ladder.to);
-                    
-                    const fromRow = Math.floor((ladder.from - 1) / 10);
-                    anyPerRow[fromRow]++;
-                }
-            }
+        if (snake) {
+            snakes[snake.from] = snake.to;
+            usedFromSquares.add(snake.from);
+            usedToSquares.add(snake.to);
+            allUsedSquares.add(snake.from);
+            allUsedSquares.add(snake.to);
+            
+            const fromRow = Math.floor((snake.from - 1) / 10);
+            anyPerRow[fromRow]++;
+            snakesPlaced++;
         }
     }
+    
+    // Generate ladders (try to place totalLaddersToGenerate ladders anywhere on board)
+    let laddersPlaced = 0;
+    attempts = 0;
+    
+    while (laddersPlaced < totalLaddersToGenerate && attempts < maxAttempts) {
+        attempts++;
+        
+        // Pick a random row (excluding last row - no ladders there)
+        const rowIndex = Math.floor(Math.random() * (numRows - 1)); // rows 0 to numRows-2
+        const rowStart = rowIndex * 10 + 1;
+        const rowEnd = rowStart + 9;
+        
+        const ladder = generateLadder(
+            totalSquares,
+            rowStart,
+            rowEnd,
+            preset,
+            usedFromSquares,
+            usedToSquares,
+            allUsedSquares,
+            anyPerRow,
+            numRows
+        );
+        
+        if (ladder) {
+            ladders[ladder.from] = ladder.to;
+            usedFromSquares.add(ladder.from);
+            usedToSquares.add(ladder.to);
+            allUsedSquares.add(ladder.from);
+            allUsedSquares.add(ladder.to);
+            
+            const fromRow = Math.floor((ladder.from - 1) / 10);
+            anyPerRow[fromRow]++;
+            laddersPlaced++;
+        }
+    }
+    
+    console.log(`Generated ${snakesPlaced}/${totalSnakesToGenerate} snakes and ${laddersPlaced}/${totalLaddersToGenerate} ladders`);
     
     return { snakes, ladders };
 }
