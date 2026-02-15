@@ -154,10 +154,12 @@ function handleSnakesLaddersModeChange(mode) {
     const customInputs = document.getElementById('customSnakesLaddersInputs');
     const customSnakesInput = document.getElementById('customSnakesInput');
     const customLaddersInput = document.getElementById('customLaddersInput');
+    const advancedRandom = document.getElementById('advancedRandomSettings');
     
     if (mode === 'custom') {
-        // Show custom inputs
+        // Show custom inputs, hide advanced random
         customInputs.style.display = 'block';
+        advancedRandom.style.display = 'none';
         
         // Populate with current values if empty
         if (!customSnakesInput.value && Object.keys(window.GAME_STATE.customSnakes).length > 0) {
@@ -166,9 +168,14 @@ function handleSnakesLaddersModeChange(mode) {
         if (!customLaddersInput.value && Object.keys(window.GAME_STATE.customLadders).length > 0) {
             customLaddersInput.value = formatSnakesLaddersForDisplay(window.GAME_STATE.customLadders);
         }
-    } else {
-        // Hide custom inputs
+    } else if (mode === 'random') {
+        // Show advanced random, hide custom inputs
         customInputs.style.display = 'none';
+        advancedRandom.style.display = 'block';
+    } else {
+        // Classic - hide both
+        customInputs.style.display = 'none';
+        advancedRandom.style.display = 'none';
     }
     
     saveGameState();
@@ -359,6 +366,53 @@ function setupEventListeners() {
         });
     });
     
+    // Toggle advanced random settings
+    document.getElementById('toggleAdvancedRandom').addEventListener('click', function() {
+        const content = document.getElementById('advancedRandomContent');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            this.textContent = '⚙️ Hide Advanced Settings';
+        } else {
+            content.style.display = 'none';
+            this.textContent = '⚙️ Advanced Random Settings';
+        }
+    });
+    
+    // Advanced random settings - checkboxes
+    const randomConfigFields = [
+        'enableMaxLaddersPerRow', 'maxLaddersPerRow',
+        'enableMaxSnakesPerRow', 'maxSnakesPerRow',
+        'enableMaxAnyPerRow', 'maxAnyPerRow',
+        'enableMaxJump', 'maxJump',
+        'enableMaxFall', 'maxFall',
+        'enableMinJump', 'minJump',
+        'enableMinFall', 'minFall',
+        'enableNoSnakesRanges', 'noSnakesRanges',
+        'enableNoLaddersRanges', 'noLaddersRanges'
+    ];
+    
+    randomConfigFields.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if (!element) return;
+        
+        if (element.type === 'checkbox') {
+            element.addEventListener('change', function() {
+                window.GAME_STATE.randomGenConfig[fieldId] = this.checked;
+                saveGameState();
+            });
+        } else if (element.type === 'number') {
+            element.addEventListener('input', function() {
+                window.GAME_STATE.randomGenConfig[fieldId] = parseInt(this.value) || 0;
+                saveGameState();
+            });
+        } else if (element.tagName === 'TEXTAREA') {
+            element.addEventListener('input', function() {
+                window.GAME_STATE.randomGenConfig[fieldId] = this.value;
+                saveGameState();
+            });
+        }
+    });
+    
     // Custom snakes and ladders inputs
     document.getElementById('customSnakesInput').addEventListener('input', function() {
         window.GAME_STATE.customSnakes = parseCustomSnakesLadders(this.value);
@@ -466,8 +520,8 @@ function startGame() {
         window.BOARD_SNAKES = {16:6, 47:26, 49:11, 56:53, 62:19, 64:60, 87:24, 93:73, 95:75, 98:78};
         window.BOARD_LADDERS = {1:38, 4:14, 9:31, 21:42, 28:84, 36:44, 51:67, 71:91, 80:99};
     } else if (mode === 'random') {
-        // Generate random snakes and ladders
-        const generated = generateRandomSnakesAndLadders(boardSize);
+        // Generate random snakes and ladders with config
+        const generated = generateRandomSnakesAndLadders(boardSize, window.GAME_STATE.randomGenConfig);
         window.BOARD_SNAKES = generated.snakes;
         window.BOARD_LADDERS = generated.ladders;
         console.log('Generated random snakes:', window.BOARD_SNAKES);
@@ -780,6 +834,53 @@ function resetSettings() {
         ce: false,
         pf: false
     };
+    
+    // Reset random generation config
+    window.GAME_STATE.randomGenConfig = {
+        enableMaxLaddersPerRow: true,
+        maxLaddersPerRow: 1,
+        enableMaxSnakesPerRow: true,
+        maxSnakesPerRow: 1,
+        enableMaxAnyPerRow: true,
+        maxAnyPerRow: 3,
+        enableMaxJump: true,
+        maxJump: 60,
+        enableMaxFall: true,
+        maxFall: 60,
+        enableMinJump: true,
+        minJump: 4,
+        enableMinFall: true,
+        minFall: 4,
+        enableNoSnakesRanges: false,
+        noSnakesRanges: '',
+        enableNoLaddersRanges: false,
+        noLaddersRanges: ''
+    };
+    
+    // Reset advanced random settings UI
+    document.getElementById('enableMaxLaddersPerRow').checked = true;
+    document.getElementById('maxLaddersPerRow').value = 1;
+    document.getElementById('enableMaxSnakesPerRow').checked = true;
+    document.getElementById('maxSnakesPerRow').value = 1;
+    document.getElementById('enableMaxAnyPerRow').checked = true;
+    document.getElementById('maxAnyPerRow').value = 3;
+    document.getElementById('enableMaxJump').checked = true;
+    document.getElementById('maxJump').value = 60;
+    document.getElementById('enableMaxFall').checked = true;
+    document.getElementById('maxFall').value = 60;
+    document.getElementById('enableMinJump').checked = true;
+    document.getElementById('minJump').value = 4;
+    document.getElementById('enableMinFall').checked = true;
+    document.getElementById('minFall').value = 4;
+    document.getElementById('enableNoSnakesRanges').checked = false;
+    document.getElementById('noSnakesRanges').value = '';
+    document.getElementById('enableNoLaddersRanges').checked = false;
+    document.getElementById('noLaddersRanges').value = '';
+    
+    // Reset snakes/ladders mode
+    const classicRadio = document.querySelector('input[name="snakesLaddersMode"][value="classic"]');
+    if (classicRadio) classicRadio.checked = true;
+    handleSnakesLaddersModeChange('classic');
     
     // Reset all final challenge checkboxes
     ['stroking_icyhot', 'stroking_icewater', 'stroking_ktb', 'stroking_ballsqueeze', 'stroking_2finger',
